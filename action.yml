@@ -1,0 +1,15 @@
+name: 'Has Signed Canonical CLA'
+description: 'This GitHub Action verifies whether or not a particular GitHub user has signed the Canonical Contributor Licence Agreement (https://ubuntu.com/legal/contributors).'
+inputs:
+  username:
+    description: 'The name of the GitHub user to verify.'
+    required: true
+  token:
+    description: 'GitHub token.'
+    required: true
+outputs:
+  is_member:
+    description: 'True if the user has signed the agreement, otherwise False.'
+runs:
+  using: 'node12'
+  main: 'index.js'

@@ -1,0 +1,19 @@
+on: [push]
+
+jobs:
+  has_signed_cla:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Check if the current user has signed the Canonical CLA
+        id: has_signed_cla
+        uses: ./
+        with:
+          username: ${{ github.actor }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Passed Check
+        if: steps.has_signed_cla.outputs.has_signed == 'true'
+        run: echo ${{ github.actor }} has signed the Canonical CLA
+      - name: Failed Check
+        if: steps.has_signed_cla.outputs.has_signed == 'false'
+        run: echo ${{ github.actor }} has NOT signed the Canonical CLA
