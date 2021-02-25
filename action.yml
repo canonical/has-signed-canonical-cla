@@ -15,4 +15,4 @@ runs:
   main: 'index.js'
 branding:
   icon: 'user-check'
-  color: 'orange'
+  color: 'purple'

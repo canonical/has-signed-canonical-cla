@@ -22,7 +22,7 @@ True if the user has signed the agreement, otherwise False.
 
 ```
 - name: Has Signed Canonical CLA
-  uses: MarcusTomlinson/has-signed-canonical-cla@1.0.0
+  uses: MarcusTomlinson/has-signed-canonical-cla@1.0.1
   id: has_signed_cla
   with:
     username: ${{ github.actor }}
