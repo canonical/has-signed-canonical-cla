@@ -22,7 +22,7 @@ This GitHub Action verifies whether or not a particular GitHub user has signed t
 
 ```
 - name: Has Signed Canonical CLA
-  uses: MarcusTomlinson/has-signed-canonical-cla@1.0.1
+  uses: canonical/has-signed-canonical-cla@1.0.2
   id: has_signed_cla
   with:
     username: ${{ github.actor }}
