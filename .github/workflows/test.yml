@@ -4,10 +4,9 @@ jobs:
   has_signed_cla:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - name: Check if the current user has signed the Canonical CLA
+      - name: Has Signed Canonical CLA
+        uses: MarcusTomlinson/has-signed-canonical-cla@1.0.0
         id: has_signed_cla
-        uses: ./
         with:
           username: ${{ github.actor }}
           token: ${{ secrets.GITHUB_TOKEN }}

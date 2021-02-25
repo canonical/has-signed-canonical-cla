@@ -21,9 +21,9 @@ True if the user has signed the agreement, otherwise False.
 ## Example usage
 
 ```
-- name: Check if the current user has signed the Canonical CLA
+- name: Has Signed Canonical CLA
+  uses: MarcusTomlinson/has-signed-canonical-cla@1.0.0
   id: has_signed_cla
-  uses: actions/has-signed-canonical-cla@v1.0
   with:
     username: ${{ github.actor }}
     token: ${{ secrets.GITHUB_TOKEN }}
