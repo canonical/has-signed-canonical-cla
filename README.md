@@ -21,16 +21,20 @@ This GitHub Action verifies whether or not a particular GitHub user has signed t
 ## Example usage
 
 ```
-- name: Has Signed Canonical CLA
-  uses: canonical/has-signed-canonical-cla@1.0.2
-  id: has_signed_cla
-  with:
-    username: ${{ github.actor }}
-    token: ${{ secrets.GITHUB_TOKEN }}
-- name: Passed Check
-  if: steps.has_signed_cla.outputs.has_signed == 'true'
-  run: echo ${{ github.actor }} has signed the Canonical CLA
-- name: Failed Check
-  if: steps.has_signed_cla.outputs.has_signed == 'false'
-  run: echo ${{ github.actor }} has NOT signed the Canonical CLA
+name: cla-check
+on: [pull_request]
+
+jobs:
+  cla-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check if CLA signed
+        id: has_signed_cla
+        uses: canonical/has-signed-canonical-cla@1.0.2
+        with:
+          username: ${{ github.event.pull_request.user.login }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Verify result
+        if: steps.has_signed_cla.outputs.has_signed == 'false'
+        run: exit 1
 ```
