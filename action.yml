@@ -9,7 +9,7 @@ inputs:
     required: true
 outputs:
   is_member:
-    description: 'True if the user has signed the agreement, otherwise False.'
+    description: '\'true\' if the user has signed the agreement, otherwise \'false\'.'
 runs:
   using: 'node12'
   main: 'index.js'
