@@ -22,6 +22,7 @@ async function run() {
 
   await exec.exec('sudo apt-get update');
   await exec.exec('sudo apt-get install python3-launchpadlib git');
+  await exec.exec('git fetch origin ${{ github.base_ref }}:${{ github.base_ref }}');
   await exec.exec('python cla_check.py ' + base_ref + '..HEAD');
 }
 
