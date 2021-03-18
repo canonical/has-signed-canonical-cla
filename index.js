@@ -11,7 +11,7 @@ async function run() {
 
   const { data: orgs } = await octokit.orgs.listForUser({ username, per_page: 100 });
 
-  const has_signed = false
+  var has_signed = false
 
   await octokit.request('GET /orgs/{org}/members/{username}', {
     org: 'CanonicalContributorAgreement',
