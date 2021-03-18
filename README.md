@@ -16,7 +16,7 @@ This GitHub Action verifies whether or not a particular GitHub user has signed t
 
 ### `has_signed`
 
-'true' if the user has signed the agreement, otherwise 'false'.
+"true" if the user has signed the agreement, otherwise "false".
 
 ## Example usage
 
