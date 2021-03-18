@@ -13,6 +13,7 @@ async function run() {
 
   var has_signed = false
 
+  // First check GitHub
   await octokit.request('GET /orgs/{org}/members/{username}', {
     org: 'CanonicalContributorAgreement',
     username: username
@@ -22,6 +23,7 @@ async function run() {
     has_signed = false
   });
 
+  // If not on GitHub, check Launchpad
   if (!has_signed) {
     await exec.exec('sudo apt-get update');
     await exec.exec('sudo apt-get install python3-launchpadlib git');

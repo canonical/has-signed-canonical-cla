@@ -142,7 +142,7 @@ def main():
             print("Logging into Launchpad...")
             lp = Launchpad.login_anonymously("check CLA", "production")
             cla_folks = lp.people["contributor-agreement-canonical"].participants
-        if not lp_email_check("test@test.com", lp, cla_folks, width):
+        if not lp_email_check(email, lp, cla_folks, width):
             failed = True
 
     if failed:
