@@ -1,13 +1,14 @@
+name: cla-check
 on: [pull_request]
 
 jobs:
-  has_signed_cla:
+  cla-check:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Has Signed Canonical CLA
-        uses: ./
+      - name: Check if CLA signed
         id: has_signed_cla
+        uses: ./
         with:
           username: ${{ github.event.pull_request.user.login }}
           token: ${{ secrets.CLA_MEMBER_SECRET }}
