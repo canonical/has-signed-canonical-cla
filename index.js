@@ -9,8 +9,6 @@ async function run() {
 
   const octokit = github.getOctokit(token);
 
-  const { data: orgs } = await octokit.orgs.listForUser({ username, per_page: 100 });
-
   var has_signed = false
 
   // First check GitHub
