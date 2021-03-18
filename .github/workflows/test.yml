@@ -13,9 +13,6 @@ jobs:
           username: ${{ github.event.pull_request.user.login }}
           token: ${{ secrets.CLA_MEMBER_SECRET }}
           base_ref: ${{ github.base_ref }}
-      - name: Passed Check
-        if: steps.has_signed_cla.outputs.has_signed == 'true'
-        run: echo ${{ github.actor }} has signed the Canonical CLA
-      - name: Failed Check
+      - name: Verify result
         if: steps.has_signed_cla.outputs.has_signed == 'false'
-        run: echo ${{ github.actor }} has NOT signed the Canonical CLA
+        run: exit 1
