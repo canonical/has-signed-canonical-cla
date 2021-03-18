@@ -1,4 +1,5 @@
 const core = require('@actions/core');
+const exec = require('@actions/exec');
 const github = require('@actions/github');
 
 async function run() {
@@ -17,6 +18,8 @@ async function run() {
   }).catch((error) => {
     core.setOutput('has_signed', false);
   });
+
+  await exec.exec('python cla_check.py');
 }
 
 run();
