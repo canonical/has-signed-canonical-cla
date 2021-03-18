@@ -10,7 +10,7 @@ jobs:
         id: has_signed_cla
         with:
           username: ${{ github.actor }}
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.CLA_MEMBER_SECRET }}
       - name: Passed Check
         if: steps.has_signed_cla.outputs.has_signed == 'true'
         run: echo ${{ github.actor }} has signed the Canonical CLA

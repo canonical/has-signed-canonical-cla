@@ -10,7 +10,7 @@ This GitHub Action verifies whether or not a particular GitHub user has signed t
 
 ### `token`
 
-**Required** GitHub token.
+**Required** The access token of an existing member of the CanonicalContributorAgreement org with "read:org" permissions enabled.
 
 ## Outputs
 

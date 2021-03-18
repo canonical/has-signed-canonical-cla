@@ -5,7 +5,7 @@ inputs:
     description: 'The name of the GitHub user to verify.'
     required: true
   token:
-    description: 'GitHub token.'
+    description: 'The access token of an existing member of the CanonicalContributorAgreement org with "read:org" permissions enabled.'
     required: true
 outputs:
   is_member:
