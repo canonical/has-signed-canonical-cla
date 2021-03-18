@@ -35,6 +35,6 @@ jobs:
           username: ${{ github.event.pull_request.user.login }}
           base_ref: ${{ github.base_ref }}
       - name: Verify result
-        if: steps.has_signed_cla.outputs.has_signed == 'false'
+        if: steps.has_signed_cla.outputs.has_signed != 'true'
         run: exit 1
 ```
