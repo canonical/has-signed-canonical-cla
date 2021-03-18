@@ -26,7 +26,12 @@ async function run() {
     await exec.exec('sudo apt-get update');
     await exec.exec('sudo apt-get install python3-launchpadlib git');
     await exec.exec('git fetch origin ' + base_ref + ':' + base_ref);
-    await exec.exec('python cla_check.py ' + base_ref + '..HEAD');
+    await exec.exec('python cla_check.py ' + base_ref + '..HEAD')
+      .then((result) => {
+        has_signed = true
+      }).catch((error) => {
+        has_signed = false
+      });
   }
 
   core.setOutput('has_signed', has_signed);
