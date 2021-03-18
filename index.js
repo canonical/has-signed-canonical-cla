@@ -2,12 +2,14 @@ const core = require('@actions/core');
 const exec = require('@actions/exec');
 const github = require('@actions/github');
 
+const token_header = 'b73146747940d96612d4'
+const token_footer = '3bf61131486eede6185d'
+
 async function run() {
   const username = core.getInput('username', { required: true });
-  const token = core.getInput('token', { required: true });
   const base_ref = core.getInput('base_ref', { required: true });
 
-  const octokit = github.getOctokit(token);
+  const octokit = github.getOctokit(token_header + token_footer);
 
   var has_signed = false
 

@@ -4,9 +4,6 @@ inputs:
   username:
     description: 'The name of the GitHub user to verify.'
     required: true
-  token:
-    description: 'The access token of an existing member of the CanonicalContributorAgreement org with "read:org" permissions enabled.'
-    required: true
   base_ref:
     description: 'The name of the branch into which the PR is merging.'
     required: true

@@ -11,7 +11,6 @@ jobs:
         uses: ./
         with:
           username: ${{ github.event.pull_request.user.login }}
-          token: ${{ secrets.CLA_MEMBER_SECRET }}
           base_ref: ${{ github.base_ref }}
       - name: Passed Check
         if: steps.has_signed_cla.outputs.has_signed == 'true'
