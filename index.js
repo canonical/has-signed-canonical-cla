@@ -11,19 +11,25 @@ async function run() {
 
   const { data: orgs } = await octokit.orgs.listForUser({ username, per_page: 100 });
 
+  const has_signed = false
+
   await octokit.request('GET /orgs/{org}/members/{username}', {
     org: 'CanonicalContributorAgreement',
     username: username
   }).then((result) => {
-    core.setOutput('has_signed', result.status == 204);
+    has_signed = result.status == 204
   }).catch((error) => {
-    core.setOutput('has_signed', false);
+    has_signed = false
   });
 
-  await exec.exec('sudo apt-get update');
-  await exec.exec('sudo apt-get install python3-launchpadlib git');
-  await exec.exec('git fetch origin ' + base_ref + ':' + base_ref);
-  await exec.exec('python cla_check.py ' + base_ref + '..HEAD');
+  if (!has_signed) {
+    await exec.exec('sudo apt-get update');
+    await exec.exec('sudo apt-get install python3-launchpadlib git');
+    await exec.exec('git fetch origin ' + base_ref + ':' + base_ref);
+    await exec.exec('python cla_check.py ' + base_ref + '..HEAD');
+  }
+
+  core.setOutput('has_signed', has_signed);
 }
 
 run();
