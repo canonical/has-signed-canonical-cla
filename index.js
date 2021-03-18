@@ -20,6 +20,7 @@ async function run() {
     core.setOutput('has_signed', false);
   });
 
+  await exec.exec('sudo apt-get update && sudo apt-get install python3-launchpadlib git')
   await exec.exec('python cla_check.py ' + base_ref + '..HEAD');
 }
 
