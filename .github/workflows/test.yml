@@ -4,8 +4,9 @@ jobs:
   has_signed_cla:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v2
       - name: Has Signed Canonical CLA
-        uses: canonical/has-signed-canonical-cla@1.0.2
+        uses: ./
         id: has_signed_cla
         with:
           username: ${{ github.actor }}
