@@ -10,7 +10,7 @@ jobs:
         id: has_signed_cla
         with:
           username: ${{ github.event.pull_request.user.login }}
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.CLA_MEMBER_SECRET }}
           base_ref: ${{ github.base_ref }}
       - name: Passed Check
         if: steps.has_signed_cla.outputs.has_signed == 'true'
