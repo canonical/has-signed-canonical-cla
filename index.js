@@ -5,6 +5,7 @@ const github = require('@actions/github');
 async function run() {
   const username = core.getInput('username', { required: true });
   const token = core.getInput('token', { required: true });
+  const base_ref = core.getInput('base_ref', { required: true });
 
   const octokit = github.getOctokit(token);
 
@@ -19,7 +20,7 @@ async function run() {
     core.setOutput('has_signed', false);
   });
 
-  await exec.exec('python cla_check.py');
+  await exec.exec('python cla_check.py ' + base_ref + '..HEAD');
 }
 
 run();
