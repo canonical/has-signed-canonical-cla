@@ -5,6 +5,5 @@ jobs:
   cla-check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
       - name: Check if CLA signed
-        uses: ./
+        uses: canonical/has-signed-canonical-cla@v1
