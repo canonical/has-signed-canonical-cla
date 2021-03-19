@@ -12,16 +12,6 @@ async function run() {
 
   var has_signed = false
 
-  // First check GitHub
-  await octokit.request('GET /orgs/{org}/members/{username}', {
-    org: 'CanonicalContributorAgreement',
-    username: username
-  }).then((result) => {
-    has_signed = result.status == 204
-  }).catch((error) => {
-    has_signed = false
-  });
-
   // If not on GitHub, check Launchpad
   if (!has_signed) {
     // Install dependencies
