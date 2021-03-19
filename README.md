@@ -30,7 +30,7 @@ jobs:
     steps:
       - name: Check if CLA signed
         id: has_signed_cla
-        uses: canonical/has-signed-canonical-cla@1.0.3
+        uses: canonical/has-signed-canonical-cla@1.0.4
         with:
           username: ${{ github.event.pull_request.user.login }}
           base_ref: ${{ github.base_ref }}
