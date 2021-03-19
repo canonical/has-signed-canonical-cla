@@ -47,7 +47,8 @@ async function run() {
     const base_sha = github.context.payload['pull_request']['base']['sha']
     const head_sha = github.context.payload['pull_request']['head']['sha']
 
-    await exec.exec('python ./repo/cla_check.py ' + base_sha + '..' + head_sha)
+    await exec.exec('cp cla_check.py repo/');
+    await exec.exec('python repo/cla_check.py ' + base_sha + '..' + head_sha)
       .then((result) => {
         has_signed = true
       }).catch((error) => {
