@@ -19,7 +19,7 @@ async function run() {
   }).then((result) => {
     has_signed = result.status == 204
   }).catch((error) => {
-    core.setFailed(error.message);
+    has_signed = false
   });
 
   // If not on GitHub, check Launchpad
