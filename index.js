@@ -52,15 +52,9 @@ async function run() {
 
     await exec.exec('wget https://raw.githubusercontent.com/canonical/has-signed-canonical-cla/main/cla_check.py');
     await exec.exec('python cla_check.py repo ' + base_sha + '..' + head_sha)
-      .then((result) => {
-        has_signed = true
-      }).catch((error) => {
+      .catch((error) => {
         core.setFailed(error.message);
       });
-  }
-
-  if (!has_signed) {
-    core.setFailed(username + ' has not signed the CLA');
   }
 }
 
