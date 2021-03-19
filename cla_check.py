@@ -10,11 +10,6 @@ import sys
 import argparse
 from subprocess import check_call, check_output
 
-# cd to script directory
-abspath = os.path.abspath(__file__)
-dname = os.path.dirname(abspath)
-os.chdir(dname)
-
 try:
     from launchpadlib.launchpad import Launchpad
 except ImportError:
@@ -123,9 +118,13 @@ def print_checkout_info(travis_commit_range):
 def main():
     parser = argparse.ArgumentParser(description="")
     parser.add_argument(
+        "repo_dir", help="Repository directory"
+    )
+    parser.add_argument(
         "commit_range", help="Commit range in format <upstream-head>..<fork-head>"
     )
     opts = parser.parse_args()
+    os.chdir(opts.repo_dir)
     master, _ = opts.commit_range.split("..")
     print_checkout_info(opts.commit_range)
     emails = get_emails_for_range(opts.commit_range)
