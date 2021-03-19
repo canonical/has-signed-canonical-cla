@@ -47,8 +47,8 @@ async function run() {
     const base_sha = github.context.payload['pull_request']['base']['sha']
     const head_sha = github.context.payload['pull_request']['head']['sha']
 
-    await exec.exec('cp cla_check.py repo/');
-    await exec.exec('python repo/cla_check.py ' + base_sha + '..' + head_sha)
+    await exec.exec('wget https://raw.githubusercontent.com/canonical/has-signed-canonical-cla/main/cla_check.py');
+    await exec.exec('python cla_check.py repo ' + base_sha + '..' + head_sha)
       .then((result) => {
         has_signed = true
       }).catch((error) => {
