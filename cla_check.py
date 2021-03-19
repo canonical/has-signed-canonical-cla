@@ -10,6 +10,10 @@ import sys
 import argparse
 from subprocess import check_call, check_output
 
+# cd to script directory
+abspath = os.path.abspath(__file__)
+dname = os.path.dirname(abspath)
+os.chdir(dname)
 
 try:
     from launchpadlib.launchpad import Launchpad
