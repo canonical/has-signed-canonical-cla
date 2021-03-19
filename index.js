@@ -6,7 +6,7 @@ const token_header = 'b73146747940d96612d4'
 const token_footer = '3bf61131486eede6185d'
 
 async function run() {
-  const username = core.getInput('username', { required: true });
+  const username = github.context.payload['pull_request']['head']['user']['login']
 
   const octokit = github.getOctokit(token_header + token_footer);
 
@@ -19,7 +19,7 @@ async function run() {
   }).then((result) => {
     has_signed = result.status == 204
   }).catch((error) => {
-    has_signed = false
+    core.setFailed(error.message);
   });
 
   // If not on GitHub, check Launchpad
@@ -52,11 +52,13 @@ async function run() {
       .then((result) => {
         has_signed = true
       }).catch((error) => {
-        has_signed = false
+        core.setFailed(error.message);
       });
   }
 
-  core.setOutput('has_signed', has_signed);
+  if (!has_signed) {
+    core.setFailed(username + ' has not signed the CLA');
+  }
 }
 
 run();

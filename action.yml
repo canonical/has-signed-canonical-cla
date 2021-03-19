@@ -1,15 +1,5 @@
 name: 'Has Signed Canonical CLA'
 description: 'This GitHub Action verifies whether or not a particular GitHub user has signed the Canonical Contributor Licence Agreement.'
-inputs:
-  username:
-    description: 'The name of the GitHub user to verify.'
-    required: true
-  base_ref:
-    description: 'The name of the branch into which the PR is merging.'
-    required: true
-outputs:
-  is_member:
-    description: '"true" if the user has signed the agreement, otherwise "false".'
 runs:
   using: 'node12'
   main: 'index.js'

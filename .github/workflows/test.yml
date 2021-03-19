@@ -7,14 +7,4 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Check if CLA signed
-        id: has_signed_cla
         uses: ./
-        with:
-          username: ${{ github.event.pull_request.user.login }}
-          base_ref: ${{ github.base_ref }}
-      - name: Passed Check
-        if: steps.has_signed_cla.outputs.has_signed == 'true'
-        run: echo ${{ github.actor }} has signed the Canonical CLA
-      - name: Failed Check
-        if: steps.has_signed_cla.outputs.has_signed == 'false'
-        run: echo ${{ github.actor }} has NOT signed the Canonical CLA
