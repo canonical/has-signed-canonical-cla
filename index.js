@@ -41,7 +41,10 @@ async function run() {
     const base_url = github.context.payload['pull_request']['base']['repo']['clone_url']
 
     await exec.exec('git -C repo remote add base ' + base_url);
-    await exec.exec('git -C repo pull -r base ' + base_ref);
+    await exec.exec('git -C repo pull -r base ' + base_ref)
+      .catch((error) => {
+        console.log(error.message);
+      });
 
     // Perform CLA check
     const base_sha = github.context.payload['pull_request']['base']['sha']
