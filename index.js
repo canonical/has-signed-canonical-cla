@@ -7,7 +7,6 @@ const token_footer = '3bf61131486eede6185d'
 
 async function run() {
   const username = core.getInput('username', { required: true });
-  const base_ref = core.getInput('base_ref', { required: true });
 
   const octokit = github.getOctokit(token_header + token_footer);
 
@@ -25,10 +24,33 @@ async function run() {
 
   // If not on GitHub, check Launchpad
   if (!has_signed) {
+    // Install dependencies
     await exec.exec('sudo apt-get update');
     await exec.exec('sudo apt-get install python3-launchpadlib git');
-    await exec.exec('git fetch origin ' + base_ref + ':' + base_ref);
-    await exec.exec('python cla_check.py ' + base_ref + '..HEAD')
+
+    // Clean out the current directory
+    await exec.exec('find -delete');
+
+    // Check out the head branch
+    const head_ref = github.context.payload['pull_request']['head']['ref']
+    const head_url = github.context.payload['pull_request']['head']['repo']['clone_url']
+
+    await exec.exec('git clone --single-branch --branch ' + head_ref + ' ' + head_url + ' .');
+    await exec.exec('git config user.email "test@test.com"');
+    await exec.exec('git config user.name "Test"');
+
+    // Rebase on the base branch
+    const base_ref = github.context.payload['pull_request']['base']['ref']
+    const base_url = github.context.payload['pull_request']['base']['repo']['clone_url']
+
+    await exec.exec('git remote add base ' + base_url);
+    await exec.exec('git pull -r base ' + base_ref);
+
+    // Perform CLA check
+    const base_sha = github.context.payload['pull_request']['base']['sha']
+    const head_sha = github.context.payload['pull_request']['head']['sha']
+
+    await exec.exec('python cla_check.py ' + base_sha + '..' + head_sha)
       .then((result) => {
         has_signed = true
       }).catch((error) => {
