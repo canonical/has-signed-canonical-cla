@@ -43,6 +43,22 @@ async function run() {
     const username = commit_authors[i]['username'];
     const email = commit_authors[i]['email'];
 
+    if (email.endsWith('@canonical.com')) {
+      console.log('- ' + email + ' ✓ (@canonical.com account)');
+      commit_authors[i]['signed'] = true;
+      continue
+    }
+    if (email.endsWith('@mozilla.com')) {
+      console.log('- ' + email + ' ✓ (@mozilla.com account)');
+      commit_authors[i]['signed'] = true;
+      continue
+    }
+    if (email.endsWith('@users.noreply.github.com')) {
+      console.log('- ' + email + ' ✕ (privacy-enabled github web edit email address)');
+      commit_authors[i]['signed'] = false;
+      continue
+    }
+
     await octokit.request('GET /orgs/{org}/members/{username}', {
       org: 'CanonicalContributorAgreement',
       username: username
@@ -69,7 +85,7 @@ async function run() {
     if (commit_authors[i]['signed'] == false) {
       const email = commit_authors[i]['email'];
 
-      await exec.exec('python', ['lp_cla_check.py', email], options = {
+      await exec.exec('python3', ['lp_cla_check.py', email], options = {
         silent: true,
         listeners: {
           stdout: (data) => {
