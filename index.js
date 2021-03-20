@@ -33,25 +33,12 @@ async function run() {
     const head_url = github.context.payload['pull_request']['head']['repo']['clone_url']
 
     await exec.exec('git clone --single-branch --branch ' + head_ref + ' ' + head_url + ' repo');
-    await exec.exec('git -C repo config user.email "test@test.com"');
-    await exec.exec('git -C repo config user.name "Test"');
-
-    // Rebase on the base branch
-    const base_ref = github.context.payload['pull_request']['base']['ref']
-    const base_url = github.context.payload['pull_request']['base']['repo']['clone_url']
-
-    await exec.exec('git -C repo remote add base ' + base_url);
-    await exec.exec('git -C repo pull -r base ' + base_ref)
-      .catch((error) => {
-        console.log(error.message);
-      });
 
     // Perform CLA check
-    const base_sha = github.context.payload['pull_request']['base']['sha']
-    const head_sha = github.context.payload['pull_request']['head']['sha']
+    const commits = github.context.payload['pull_request']['commits'];
 
     await exec.exec('wget https://raw.githubusercontent.com/canonical/has-signed-canonical-cla/main/cla_check.py');
-    await exec.exec('python cla_check.py repo ' + base_sha + '..' + head_sha)
+    await exec.exec('python cla_check.py repo HEAD~' + commits + '..HEAD')
       .catch((error) => {
         core.setFailed(error.message);
       });
