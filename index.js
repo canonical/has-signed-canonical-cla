@@ -20,9 +20,18 @@ async function run() {
       core.setFailed(error.message);
     });
 
-  // Get commit authors
   const octokit = github.getOctokit(token_header + token_footer);
 
+  // Get existing contributors
+  const contributors_url = github.context.payload['pull_request']['base']['repo']['contributors_url'];
+  const contributors = await octokit.request('GET ' + contributors_url);
+
+  var contributors_list = []
+  for (const i in contributors.data) {
+    contributors_list.push(contributors.data[i]['login']);
+  }
+
+  // Get commit authors
   const commits_url = github.context.payload['pull_request']['commits_url'];
   const commits = await octokit.request('GET ' + commits_url);
 
@@ -44,18 +53,18 @@ async function run() {
     const email = commit_authors[i]['email'];
 
     if (email.endsWith('@canonical.com')) {
-      console.log('- ' + email + ' ✓ (@canonical.com account)');
+      console.log('- ' + username + ' ✓ (@canonical.com account)');
       commit_authors[i]['signed'] = true;
       continue
     }
     if (email.endsWith('@mozilla.com')) {
-      console.log('- ' + email + ' ✓ (@mozilla.com account)');
+      console.log('- ' + username + ' ✓ (@mozilla.com account)');
       commit_authors[i]['signed'] = true;
       continue
     }
-    if (email.endsWith('@users.noreply.github.com')) {
-      console.log('- ' + email + ' ✕ (privacy-enabled github web edit email address)');
-      commit_authors[i]['signed'] = false;
+    if (contributors_list.includes(username)) {
+      console.log('- ' + username + ' ✓ (already a contributor)');
+      commit_authors[i]['signed'] = true;
       continue
     }
 
@@ -64,15 +73,15 @@ async function run() {
       username: username
     }).then((result) => {
       if (result.status == 204) {
-        console.log('- ' + email + ' ✓ (has signed the CLA)');
+        console.log('- ' + username + ' ✓ (has signed the CLA)');
         commit_authors[i]['signed'] = true;
       }
       else {
-        console.log('- ' + email + ' ✕ (was not found on GitHub)');
+        console.log('- ' + username + ' ✕ (not found on GitHub)');
         commit_authors[i]['signed'] = false;
       }
     }).catch((error) => {
-      console.log('- ' + email + ' ✕ (was not found on GitHub)');
+      console.log('- ' + username + ' ✕ (not found on GitHub)');
       commit_authors[i]['signed'] = false
     });
   }
@@ -112,11 +121,11 @@ async function run() {
     }
   }
 
-  if (!passed) {
-    core.setFailed('CLA Check - FAILED');
+  if (passed) {
+    console.log('CLA Check - PASSED');
   }
   else {
-    console.log('CLA Check - PASSED');
+    core.setFailed('CLA Check - FAILED');
   }
 }
 
