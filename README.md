@@ -2,6 +2,12 @@
 
 This GitHub Action verifies whether or not the authors of a pull request have signed the Canonical Contributor Licence Agreement (https://ubuntu.com/legal/contributors).
 
+## Inputs
+
+### `accept-existing-contributors`
+
+**Optional** Pass CLA check for existing project contributors (default: false)
+
 ## Example usage
 
 ```

@@ -14,7 +14,7 @@ def lp_email_check(email, lp, cla_members):
         print('- ' + email + ' ✓ (has signed the CLA)')
         return True
     else:
-        print('- ' + email + ' ✕ (has NOT signed the CLA)')
+        print('- ' + email + ' ✕ (has not signed the CLA)')
         return False
 
 def main():

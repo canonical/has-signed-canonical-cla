@@ -1,5 +1,10 @@
 name: 'Has Signed Canonical CLA'
-description: 'This GitHub Action verifies whether or not the authors of a pull request have signed the Canonical Contributor Licence Agreement (https://ubuntu.com/legal/contributors).'
+description: 'This GitHub Action verifies whether or not the authors of a pull request have signed the Canonical CLA.'
+inputs:
+  accept-existing-contributors:
+    description: 'Pass CLA check for existing project contributors'
+    required: false
+    default: false
 runs:
   using: 'node12'
   main: 'index.js'
