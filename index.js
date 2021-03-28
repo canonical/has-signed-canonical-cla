@@ -103,6 +103,9 @@ async function run() {
         listeners: {
           stdout: (data) => {
             process.stdout.write(data.toString());
+          },
+          stderr: (data) => {
+            process.stdout.write(data.toString());
           }
         }
       })
