@@ -56,6 +56,11 @@ async function run() {
     const username = commit_authors[i]['username'];
     const email = commit_authors[i]['email'];
 
+    if (username == 'dependabot[bot]') {
+      console.log('- ' + username + ' ✓ (GitHub Dependabot)');
+      commit_authors[i]['signed'] = true;
+      continue
+    }
     if (email.endsWith('@canonical.com')) {
       console.log('- ' + username + ' ✓ (@canonical.com account)');
       commit_authors[i]['signed'] = true;
