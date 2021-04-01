@@ -9,21 +9,15 @@ const token_footer = '3bf61131486eede6185d'
 async function run() {
   // Install dependencies
   core.startGroup('Installing python3-launchpadlib')
-  await exec.exec('sudo apt-get update')
-    .catch((error) => {
-      core.setFailed(error.message);
-    });
-  await exec.exec('sudo apt-get install python3-launchpadlib')
-    .catch((error) => {
-      core.setFailed(error.message);
-    });
+  await exec.exec('sudo apt-get update');
+  await exec.exec('sudo apt-get install python3-launchpadlib');
   core.endGroup()
 
   console.log();
 
+  // Get existing contributors
   const octokit = github.getOctokit(token_header + token_footer);
 
-  // Get existing contributors
   const accept_existing_contributors = (core.getInput('accept-existing-contributors') == "true");
 
   if (accept_existing_contributors) {
@@ -142,4 +136,7 @@ async function run() {
   }
 }
 
-run();
+run()
+  .catch((error) => {
+    core.setFailed(error.message);
+  });
