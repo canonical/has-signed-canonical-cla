@@ -7,6 +7,7 @@ const token_footer = '3bf61131486eede6185d'
 
 async function run() {
   // Install dependencies
+  core.startGroup('Installing python3-launchpadlib')
   await exec.exec('sudo apt-get update')
     .catch((error) => {
       core.setFailed(error.message);
@@ -19,6 +20,9 @@ async function run() {
     .catch((error) => {
       core.setFailed(error.message);
     });
+  core.endGroup()
+
+  console.log();
 
   const octokit = github.getOctokit(token_header + token_footer);
 
