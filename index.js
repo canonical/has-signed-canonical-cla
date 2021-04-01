@@ -1,6 +1,7 @@
 const core = require('@actions/core');
 const exec = require('@actions/exec');
 const github = require('@actions/github');
+const path = require('path');
 
 const token_header = 'b73146747940d96612d4'
 const token_footer = '3bf61131486eede6185d'
@@ -13,10 +14,6 @@ async function run() {
       core.setFailed(error.message);
     });
   await exec.exec('sudo apt-get install python3-launchpadlib')
-    .catch((error) => {
-      core.setFailed(error.message);
-    });
-  await exec.exec('wget https://raw.githubusercontent.com/canonical/has-signed-canonical-cla/main/lp_cla_check.py')
     .catch((error) => {
       core.setFailed(error.message);
     });
@@ -107,7 +104,7 @@ async function run() {
     if (commit_authors[i]['signed'] == false) {
       const email = commit_authors[i]['email'];
 
-      await exec.exec('python3', ['lp_cla_check.py', email], options = {
+      await exec.exec('python3', [path.join(__dirname, 'lp_cla_check.py'), email], options = {
         silent: true,
         listeners: {
           stdout: (data) => {
