@@ -36,7 +36,10 @@ async function run() {
 
   var commit_authors = []
   for (const i in commits.data) {
-    const username = commits.data[i]['author']['login'];
+    var username;
+    if (commits.data[i]['author']) {
+      username = commits.data[i]['author']['login'];
+    }
     const email = commits.data[i]['commit']['author']['email'];
     commit_authors[username] = {
       'username': username,
@@ -51,6 +54,9 @@ async function run() {
     const username = commit_authors[i]['username'];
     const email = commit_authors[i]['email'];
 
+    if (!username) {
+      continue;
+    }
     if (username == 'dependabot[bot]') {
       console.log('- ' + username + ' ✓ (GitHub Dependabot)');
       commit_authors[i]['signed'] = true;
