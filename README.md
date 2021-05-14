@@ -16,7 +16,7 @@ Note: to enable this feature, the action needs to run on `pull_request_target` i
 
 ```
 name: cla-check
-on: [pull_request]
+on: [pull_request_target]
 
 jobs:
   cla-check:
