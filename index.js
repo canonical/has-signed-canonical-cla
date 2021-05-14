@@ -5,7 +5,7 @@ const path = require('path');
 
 const token_header = 'b73146747940d96612d4'
 const token_footer = '3bf61131486eede6185d'
-const githubToken = core.getInput('GITHUB_TOKEN', {required: true})
+const githubToken = core.getInput('github-token', {required: true})
 
 async function run() {
   // Install dependencies
