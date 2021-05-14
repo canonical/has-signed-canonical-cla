@@ -15,7 +15,7 @@ It will comment on the PR if any authors have not signed the CLA and update the 
 
 ```
 name: cla-check
-on: [pull_request]
+on: [pull_request_target]
 
 jobs:
   cla-check:
