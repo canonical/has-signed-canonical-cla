@@ -5,7 +5,7 @@ inputs:
     description: 'Pass CLA check for existing project contributors'
     required: false
     default: false
-  GITHUB_TOKEN:
+  github-token:
     description: 'The GitHub access token (e.g. secrets.GITHUB_TOKEN) used to create or update the comment and check for existing project contributors. This defaults to {{ github.token }}.'
     default: '${{ github.token }}'
     required: false
