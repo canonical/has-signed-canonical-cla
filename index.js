@@ -5,6 +5,7 @@ const path = require('path');
 
 const token_header = 'b73146747940d96612d4'
 const token_footer = '3bf61131486eede6185d'
+const githubToken = core.getInput('GITHUB_TOKEN', {required: true})
 
 async function run() {
   // Install dependencies
@@ -127,11 +128,66 @@ async function run() {
 
   // Determine Result
   passed = true
+  var none_signers = []
   for (const i in commit_authors) {
     if (commit_authors[i]['signed'] == false) {
       passed = false;
+      none_signers.push(i)
       break;
     }
+  }
+
+  // Find previous CLA comment if any
+  const cla_header = '<!-- CLA signature is needed -->';
+  const pull_request_number = github.context.payload.pull_request.number;
+  const owner = github.context.repo.owner;
+  const repo = github.context.repo.repo;
+  const octokit_pr = github.getOctokit(githubToken);
+
+  const {data: comments} = await octokit_pr.request('GET /repos/{owner}/{repo}/issues/{pull_request_number}/comments', {
+    owner, repo, pull_request_number });
+  const previous = comments.find(comment => comment.body.includes(cla_header));
+
+  // Write a new updated comment on PR if CLA is not signed for some users
+  if (!passed) {
+    var authors_content;
+    var cla_content=`not signed Canonical CLA which is required to get the contribution merged on this project.
+Please head over to https://ubuntu.com/legal/contributors to read more about it.`
+    none_signers.forEach(function (author, i) {
+      if (i == 0) {
+        authors_content=author;
+        return;
+      } else if (i == none_signers.length-1) {
+        authors_content=' and ' + author;
+        return;
+      }
+      authors_content=', ' + author;
+    });
+
+    if (none_signers.length > 1) {
+      authors_content+=' have ';
+    } else {
+      authors_content+=' has ';
+    }
+
+    var body = `${cla_header}Hey! ${authors_content} ${cla_content}`
+    // Create new comments
+    if (!previous) {
+      await octokit_pr.request('POST /repos/{owner}/{repo}/issues/{pull_request_number}/comments', {
+        owner, repo, pull_request_number, body});
+    } else {
+      // Update existing comment
+      await octokit_pr.request('PATCH /repos/{owner}/{repo}/issues/comments/{comment_id}', {
+        owner, repo, pull_request_number, body, comment_id: previous.id});
+    }
+  }
+
+  // Update previous comment if everyone has now signed the CLA
+  if (previous && passed) {
+    await octokit_pr.request('PATCH /repos/{owner}/{repo}/issues/comments/{comment_id}', {
+      owner, repo, pull_request_number,
+      body: "Everyone contributing to this PR have now signed the CLA. Thanks!",
+      comment_id: previous.id});
   }
 
   if (passed) {
