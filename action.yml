@@ -6,7 +6,7 @@ inputs:
     required: false
     default: false
   github-token:
-    description: 'The GitHub access token (e.g. secrets.GITHUB_TOKEN) used to create or update the comment and check for existing project contributors. This defaults to {{ github.token }}.'
+    description: 'The GitHub access token (e.g. secrets.GITHUB_TOKEN) used to create a CLA comment on the pull request (default: {{ github.token }}).'
     default: '${{ github.token }}'
     required: false
 runs:

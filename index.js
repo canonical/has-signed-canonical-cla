@@ -128,11 +128,11 @@ async function run() {
 
   // Determine Result
   passed = true
-  var none_signers = []
+  var non_signers = []
   for (const i in commit_authors) {
     if (commit_authors[i]['signed'] == false) {
       passed = false;
-      none_signers.push(i)
+      non_signers.push(i)
       break;
     }
   }
@@ -167,18 +167,18 @@ async function run() {
     var authors_content;
     var cla_content=`not signed Canonical CLA which is required to get the contribution merged on this project.
 Please head over to https://ubuntu.com/legal/contributors to read more about it.`
-    none_signers.forEach(function (author, i) {
+    non_signers.forEach(function (author, i) {
       if (i == 0) {
         authors_content=author;
         return;
-      } else if (i == none_signers.length-1) {
+      } else if (i == non_signers.length-1) {
         authors_content=' and ' + author;
         return;
       }
       authors_content=', ' + author;
     });
 
-    if (none_signers.length > 1) {
+    if (non_signers.length > 1) {
       authors_content+=' have ';
     } else {
       authors_content+=' has ';
