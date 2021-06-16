@@ -165,7 +165,7 @@ async function run() {
     console.log("Posting or updating a comment on the PR")
 
     var authors_content;
-    var cla_content=`not signed Canonical CLA which is required to get the contribution merged on this project.
+    var cla_content=`not signed the Canonical CLA which is required to get this contribution merged on this project.
 Please head over to https://ubuntu.com/legal/contributors to read more about it.`
     non_signers.forEach(function (author, i) {
       if (i == 0) {
