@@ -73,6 +73,11 @@ async function run() {
       commit_authors[i]['signed'] = true;
       continue
     }
+    if (email.endsWith('@ocadogroup.com') || email.endsWith('@ocado.com')) {
+      console.log('- ' + username + ' ✓ (@ocado{,group}.com account)');
+      commit_authors[i]['signed'] = true;
+      continue
+    }
     if (accept_existing_contributors && contributors_list.includes(username)) {
       console.log('- ' + username + ' ✓ (already a contributor)');
       commit_authors[i]['signed'] = true;
