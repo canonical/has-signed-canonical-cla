@@ -97,7 +97,7 @@ async function run() {
         commit_authors[i]['signed'] = false;
       }
     }).catch((error) => {
-      console.log('- ' + username + ' ✕ (has not signed the CLA)');
+      console.log('- ' + username + ' ✕ (issue checking CLA status [' + error + '])');
       commit_authors[i]['signed'] = false
     });
   }
