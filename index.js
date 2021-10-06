@@ -35,42 +35,59 @@ async function run() {
   const commits_url = github.context.payload['pull_request']['commits_url'];
   const commits = await octokit.request('GET ' + commits_url);
 
-  var commit_authors = []
-  for (const i in commits.data) {
+  function getUsername(commit) {
     var username;
-    if (commits.data[i]['author']) {
-      username = commits.data[i]['author']['login'];
+    if (commit['author']) {
+      username = commit['author']['login'];
     }
-    const email = commits.data[i]['commit']['author']['email'];
-    commit_authors[username] = {
-      'username': username,
-      'email': email,
-      'signed': false
-    };
+    return username;
+  }
+
+  function getEmail(commit) {
+    return commit['commit']['author']['email'];
+  }
+
+  function isWebMerge(commit) {
+    return commit['committer']['login'] == 'web-flow' && commit['parents'].length > 1;
+  }
+
+  const signed_users = {};
+
+  function isSigned(commit) {
+    return signed_users[getUsername(commit)] == true;
+  }
+
+  function setSigned(commit, signed) {
+    signed_users[getUsername(commit)] = signed;
   }
 
   // Check GitHub
   console.log('Checking the following users on GitHub:');
-  for (const i in commit_authors) {
-    const username = commit_authors[i]['username'];
-    const email = commit_authors[i]['email'];
+  for (const i in commits.data) {
+    const commit = commits.data[i];
+    const username = getUsername(commit);
+    const email = getEmail(commit);
 
-    if (!username) {
+    if (!username || isSigned(commit)) {
+      continue;
+    }
+    if (isWebMerge(commit)) {
+      setSigned(commit, true);
       continue;
     }
     if (username == 'dependabot[bot]') {
       console.log('- ' + username + ' ✓ (GitHub Dependabot)');
-      commit_authors[i]['signed'] = true;
+      setSigned(commit, true);
       continue
     }
     if (email.endsWith('@canonical.com')) {
       console.log('- ' + username + ' ✓ (@canonical.com account)');
-      commit_authors[i]['signed'] = true;
+      setSigned(commit, true);
       continue
     }
     if (email.endsWith('@mozilla.com')) {
       console.log('- ' + username + ' ✓ (@mozilla.com account)');
-      commit_authors[i]['signed'] = true;
+      setSigned(commit, true);
       continue
     }
     if (email.endsWith('@ocadogroup.com') || email.endsWith('@ocado.com')) {
@@ -80,7 +97,7 @@ async function run() {
     }
     if (accept_existing_contributors && contributors_list.includes(username)) {
       console.log('- ' + username + ' ✓ (already a contributor)');
-      commit_authors[i]['signed'] = true;
+      setSigned(commit, true);
       continue
     }
 
@@ -90,15 +107,15 @@ async function run() {
     }).then((result) => {
       if (result.status == 204) {
         console.log('- ' + username + ' ✓ (has signed the CLA)');
-        commit_authors[i]['signed'] = true;
+        setSigned(commit, true);
       }
       else {
         console.log('- ' + username + ' ✕ (has not signed the CLA)');
-        commit_authors[i]['signed'] = false;
+        setSigned(commit, false);
       }
     }).catch((error) => {
       console.log('- ' + username + ' ✕ (has not signed the CLA)');
-      commit_authors[i]['signed'] = false
+      setSigned(commit, false);
     });
   }
 
@@ -106,9 +123,10 @@ async function run() {
 
   // Check Launchpad
   console.log('Checking the following users on Launchpad:');
-  for (const i in commit_authors) {
-    if (commit_authors[i]['signed'] == false) {
-      const email = commit_authors[i]['email'];
+  for (const i in commits.data) {
+    const commit = commits.data[i];
+    if (!isSigned(commit)) {
+      const email = getEmail(commit);
 
       await exec.exec('python3', [path.join(__dirname, 'lp_cla_check.py'), email], options = {
         silent: true,
@@ -122,9 +140,9 @@ async function run() {
         }
       })
         .then((result) => {
-          commit_authors[i]['signed'] = true;
+          setSigned(commit, true);
         }).catch((error) => {
-          commit_authors[i]['signed'] = false;
+          setSigned(commit, false);
         });
     }
   }
@@ -134,8 +152,9 @@ async function run() {
   // Determine Result
   passed = true
   var non_signers = []
-  for (const i in commit_authors) {
-    if (commit_authors[i]['signed'] == false) {
+  for (const i in commits.data) {
+    const commit = commits.data[i];
+    if (!isSigned(commit)) {
       passed = false;
       non_signers.push(i)
       break;
