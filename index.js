@@ -55,31 +55,48 @@ async function run() {
     const username = commit_authors[i]['username'];
     const email = commit_authors[i]['email'];
 
+    var display_name = username;
     if (!username) {
-      continue;
+      display_name = email;
     }
-    if (username == 'dependabot[bot]') {
-      console.log('- ' + username + ' ✓ (GitHub Dependabot)');
-      commit_authors[i]['signed'] = true;
-      continue
-    }
+
+    // Checks that only require the email address to match/be accepted
+
+    // Note we specifically support allowing commits where the email addresses 
+    // are allowed, but there is not an associated GiHub account/username for 
+    // the allowed email. This is to enable a Canonical/Mozilla/Ocado/etc.
+    // employee to submit a PR with commits that have an allowed email, but 
+    // submitted the PR with a GiHub account that is not also configured to be
+    // associated with that email - we still allow the commit since the email
+    // for the git commit is the source of truth and not the GiHub username.
     if (email.endsWith('@canonical.com')) {
-      console.log('- ' + username + ' ✓ (@canonical.com account)');
+      console.log('- ' + display_name + ' ✓ (@canonical.com account)');
       commit_authors[i]['signed'] = true;
       continue
     }
     if (email.endsWith('@mozilla.com')) {
-      console.log('- ' + username + ' ✓ (@mozilla.com account)');
+      console.log('- ' + display_name + ' ✓ (@mozilla.com account)');
       commit_authors[i]['signed'] = true;
       continue
     }
     if (email.endsWith('@ocadogroup.com') || email.endsWith('@ocado.com')) {
-      console.log('- ' + username + ' ✓ (@ocado{,group}.com account)');
+      console.log('- ' + display_name + ' ✓ (@ocado{,group}.com account)');
       commit_authors[i]['signed'] = true;
       continue
     }
     if (accept_existing_contributors && contributors_list.includes(username)) {
-      console.log('- ' + username + ' ✓ (already a contributor)');
+      console.log('- ' + display_name + ' ✓ (already a contributor)');
+      commit_authors[i]['signed'] = true;
+      continue
+    }
+
+    // Checks that require the commit to be associated with a GiHub username
+    if (!username) {
+      continue;
+    }
+
+    if (username == 'dependabot[bot]') {
+      console.log('- ' + display_name + ' ✓ (GitHub Dependabot)');
       commit_authors[i]['signed'] = true;
       continue
     }
@@ -89,15 +106,15 @@ async function run() {
       username: username
     }).then((result) => {
       if (result.status == 204) {
-        console.log('- ' + username + ' ✓ (has signed the CLA)');
+        console.log('- ' + display_name + ' ✓ (has signed the CLA)');
         commit_authors[i]['signed'] = true;
       }
       else {
-        console.log('- ' + username + ' ✕ (has not signed the CLA)');
+        console.log('- ' + display_name + ' ✕ (has not signed the CLA)');
         commit_authors[i]['signed'] = false;
       }
     }).catch((error) => {
-      console.log('- ' + username + ' ✕ (issue checking CLA status [' + error + '])');
+      console.log('- ' + display_name + ' ✕ (issue checking CLA status [' + error + '])');
       commit_authors[i]['signed'] = false
     });
   }
