@@ -17,13 +17,14 @@ async function run() {
   console.log();
 
   // Get existing contributors
-  const octokit = github.getOctokit(token_header + token_footer);
+  const ghRepo = github.getOctokit(githubToken);
+  const ghCLA = github.getOctokit(token_header + token_footer);
 
   const accept_existing_contributors = (core.getInput('accept-existing-contributors') == "true");
 
   if (accept_existing_contributors) {
     const contributors_url = github.context.payload['pull_request']['base']['repo']['contributors_url'];
-    const contributors = await octokit.request('GET ' + contributors_url);
+    const contributors = await ghRepo.request('GET ' + contributors_url);
 
     var contributors_list = []
     for (const i in contributors.data) {
@@ -33,7 +34,7 @@ async function run() {
 
   // Get commit authors
   const commits_url = github.context.payload['pull_request']['commits_url'];
-  const commits = await octokit.request('GET ' + commits_url);
+  const commits = await ghRepo.request('GET ' + commits_url);
 
   var commit_authors = []
   for (const i in commits.data) {
@@ -84,7 +85,7 @@ async function run() {
       continue
     }
 
-    await octokit.request('GET /orgs/{org}/members/{username}', {
+    await ghCLA.request('GET /orgs/{org}/members/{username}', {
       org: 'CanonicalContributorAgreement',
       username: username
     }).then((result) => {
@@ -159,9 +160,8 @@ async function run() {
   const pull_request_number = github.context.payload.pull_request.number;
   const owner = github.context.repo.owner;
   const repo = github.context.repo.repo;
-  const octokit_pr = github.getOctokit(githubToken);
 
-  const {data: comments} = await octokit_pr.request('GET /repos/{owner}/{repo}/issues/{pull_request_number}/comments', {
+  const {data: comments} = await ghRepo.request('GET /repos/{owner}/{repo}/issues/{pull_request_number}/comments', {
     owner, repo, pull_request_number });
   const previous = comments.find(comment => comment.body.includes(cla_header));
 
@@ -192,18 +192,18 @@ Please head over to https://ubuntu.com/legal/contributors to read more about it.
     var body = `${cla_header}Hey! ${authors_content} ${cla_content}`
     // Create new comments
     if (!previous) {
-      await octokit_pr.request('POST /repos/{owner}/{repo}/issues/{pull_request_number}/comments', {
+      await ghRepo.request('POST /repos/{owner}/{repo}/issues/{pull_request_number}/comments', {
         owner, repo, pull_request_number, body});
     } else {
       // Update existing comment
-      await octokit_pr.request('PATCH /repos/{owner}/{repo}/issues/comments/{comment_id}', {
+      await ghRepo.request('PATCH /repos/{owner}/{repo}/issues/comments/{comment_id}', {
         owner, repo, pull_request_number, body, comment_id: previous.id});
     }
   }
 
   // Update previous comment if everyone has now signed the CLA
   if (previous && passed) {
-    await octokit_pr.request('PATCH /repos/{owner}/{repo}/issues/comments/{comment_id}', {
+    await ghRepo.request('PATCH /repos/{owner}/{repo}/issues/comments/{comment_id}', {
       owner, repo, pull_request_number,
       body: "Everyone contributing to this PR have now signed the CLA. Thanks!",
       comment_id: previous.id});
