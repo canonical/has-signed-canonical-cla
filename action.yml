@@ -9,6 +9,10 @@ inputs:
     description: 'The GitHub access token (e.g. secrets.GITHUB_TOKEN) used to create a CLA comment on the pull request (default: {{ github.token }}).'
     default: '${{ github.token }}'
     required: false
+  exempted-bots:
+    description: 'GitHub usernames for exempted bot accounts.'
+    default: 'dependabot,renovate'
+    required: false
 runs:
   using: 'node16'
   main: 'index.js'

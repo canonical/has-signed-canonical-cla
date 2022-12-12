@@ -14,6 +14,10 @@ When run on the `pull_request_target` event, this action will also comment on th
 
 **Optional** The GitHub access token (e.g. secrets.GITHUB_TOKEN) used to create a CLA comment on the pull request (default: {{ github.token }})
 
+### `exempted-bots`
+
+**Optional** A comma-separated list of GitHub bots to exempt from CLA requirements. (default: dependabot,renovate)
+
 ## Example usage
 
 ```

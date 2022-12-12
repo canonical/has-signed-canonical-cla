@@ -6,6 +6,7 @@ const path = require('path');
 const token_header = 'b73146747940d96612d4'
 const token_footer = '3bf61131486eede6185d'
 const githubToken = core.getInput('github-token', {required: true})
+const exemptedBots = core.getInput('exempted-bots', {required: true}).split(',').map(input => input.trim());
 
 async function run() {
   // Install dependencies
@@ -59,8 +60,8 @@ async function run() {
     if (!username) {
       continue;
     }
-    if (username == 'dependabot[bot]') {
-      console.log('- ' + username + ' ✓ (GitHub Dependabot)');
+    if (username.endsWith('[bot]') && exemptedBots.includes(username.slice(0, -5))) {
+      console.log('- ' + username + ' ✓ (Bot exempted from CLA)');
       commit_authors[i]['signed'] = true;
       continue
     }
