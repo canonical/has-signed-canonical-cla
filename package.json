@@ -1,6 +1,6 @@
 {
   "name": "has-signed-canonical-cla",
-  "version": "1.1.2",
+  "version": "1.2.0",
   "description": "This GitHub Action verifies whether or not the authors of a pull request have signed the Canonical Contributor Licence Agreement (https://ubuntu.com/legal/contributors).",
   "main": "index.js",
   "scripts": {
