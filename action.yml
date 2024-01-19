@@ -13,6 +13,10 @@ inputs:
     description: 'GitHub usernames for exempted bot accounts.'
     default: 'dependabot,renovate'
     required: false
+  implicit-approval-from-licenses:
+    description: 'Licences for which an implicit approval of the CLA is provided.'
+    default: 'Apache-2.0'
+    required: false
 runs:
   using: 'node16'
   main: 'index.js'
