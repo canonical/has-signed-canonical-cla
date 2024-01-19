@@ -18,6 +18,10 @@ When run on the `pull_request_target` event, this action will also comment on th
 
 **Optional** A comma-separated list of GitHub bots to exempt from CLA requirements. (default: dependabot,renovate)
 
+### `implicit-approval-from-licenses`
+
+**Optional** A comma-separated list of SPDX licenses identifiers (https://spdx.org/licenses/) that are deemed to provide implicitly approval of the CLA requirements. (default: Apache-2.0)
+
 ## Example usage
 
 ```
