@@ -7,6 +7,24 @@ const token_header = 'b73146747940d96612d4'
 const token_footer = '3bf61131486eede6185d'
 const githubToken = core.getInput('github-token', {required: true})
 const exemptedBots = core.getInput('exempted-bots', {required: true}).split(',').map(input => input.trim());
+const implicitLicenses = core.getInput('implicit-approval-from-licenses', {required: true}).split(',').map(input => input.trim());
+
+// Returns the license that grants implicit CLA if found in the commit message.
+// Otherwise, returns an empty string.
+function hasImplicitLicense(commit_message) {
+  const lines = commit_message.split('\n');
+
+  // Skip the commit subject (first line)
+  for (var i = 1; i < lines.length; i++) {
+      // Remove any trailing `\r` char
+      const line = lines[i].replace(/\r$/,'');
+      const license = line.match(/^License: ?(.+)$/);
+      if (license && implicitLicenses.includes(license[1])) {
+          return license[1];
+      }
+  }
+  return '';
+}
 
 async function run() {
   // Install dependencies
@@ -39,6 +57,16 @@ async function run() {
 
   var commit_authors = []
   for (const i in commits.data) {
+    // Check if the commit message contains a license header that matches
+    // one of the licenses granting implicit CLA approval
+    if (commits.data[i]['commit']['message']) {
+      const goodLicense = hasImplicitLicense(commits.data[i]['commit']['message']);
+      if (goodLicense) {
+        console.log('- commit ' + commits.data[i]['sha'] + ' ✓ (' + goodLicense + ' license)');
+        continue;
+      }
+    }
+
     var username;
     if (commits.data[i]['author']) {
       username = commits.data[i]['author']['login'];
