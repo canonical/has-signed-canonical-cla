@@ -7,6 +7,20 @@ const token_header = 'b73146747940d96612d4'
 const token_footer = '3bf61131486eede6185d'
 const githubToken = core.getInput('github-token', {required: true})
 const exemptedBots = core.getInput('exempted-bots', {required: true}).split(',').map(input => input.trim());
+const implicitLicenses = core.getInput('implicit-approval-from-licenses', {required: true}).split(',').map(input => input.trim());
+
+function getLicenses (message) {
+  const headerRegex = /^License: ?(.+)$/g
+  let matches = []
+  let match
+  while ((match = headerRegex.exec(message)) !== null) {
+    matches.push({
+      license: match[1],
+    })
+  }
+
+  return matches
+}
 
 async function run() {
   // Install dependencies
@@ -39,6 +53,16 @@ async function run() {
 
   var commit_authors = []
   for (const i in commits.data) {
+    // Check if the commit message contains a **single** license header that matches
+    // one of the licenses granting implicit approval
+    if (commits.data[i]['commit']['message']) {
+      const licenses = getLicenses(commits.data[i]['commit']['message']);
+      if (licenses.length == 1 && implicitLicenses.includes(licenses[0].license)) {
+        console.log('Found implicit approval from license: ' + licenses[0].license);
+        continue;
+      }
+    }
+
     var username;
     if (commits.data[i]['author']) {
       username = commits.data[i]['author']['login'];
