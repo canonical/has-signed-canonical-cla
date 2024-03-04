@@ -7,6 +7,9 @@ from launchpadlib.launchpad import Launchpad
 
 def lp_email_check(email, lp, cla_members):
     user = lp.people.getByEmail(email=email)
+    if email.find('noreply')!=-1:
+        print('- ' + email + ' ✓ noreply address')
+        return True
     if not user:
         print('- ' + email + ' ✕ (has no Launchpad account)')
         return False
