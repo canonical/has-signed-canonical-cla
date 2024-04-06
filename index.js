@@ -70,6 +70,8 @@ async function run() {
     var username;
     if (commits.data[i]['author']) {
       username = commits.data[i]['author']['login'];
+    } else {
+      username = null;
     }
     const email = commits.data[i]['commit']['author']['email'];
     commit_authors[username] = {
