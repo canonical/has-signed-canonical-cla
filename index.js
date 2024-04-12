@@ -3,8 +3,6 @@ const exec = require('@actions/exec');
 const github = require('@actions/github');
 const path = require('path');
 
-const token_header = 'b73146747940d96612d4'
-const token_footer = '3bf61131486eede6185d'
 const githubToken = core.getInput('github-token', {required: true})
 const exemptedBots = core.getInput('exempted-bots', {required: true}).split(',').map(input => input.trim());
 const implicitLicenses = core.getInput('implicit-approval-from-licenses', {required: true}).split(',').map(input => input.trim());
@@ -31,14 +29,13 @@ async function run() {
   core.startGroup('Installing python3-launchpadlib')
   await exec.exec('sudo apt-get update');
   await exec.exec('sudo apt-get install python3-launchpadlib');
+  await exec.exec('npm install axios');
   core.endGroup()
 
   console.log();
 
   // Get existing contributors
   const ghRepo = github.getOctokit(githubToken);
-  const ghCLA = github.getOctokit(token_header + token_footer);
-
   const accept_existing_contributors = (core.getInput('accept-existing-contributors') == "true");
 
   if (accept_existing_contributors) {
@@ -114,22 +111,22 @@ async function run() {
       continue
     }
 
-    await ghCLA.request('GET /orgs/{org}/members/{username}', {
-      org: 'CanonicalContributorAgreement',
-      username: username
-    }).then((result) => {
-      if (result.status == 204) {
+    const axios = require('axios');
+
+    try {
+      console.log('Check in the signed list service');
+      const response = await axios.get(
+        'http://ec2-3-71-108-9.eu-central-1.compute.amazonaws.com/check_user/' + username
+      );
+      if (response.status === 200) {
         console.log('- ' + username + ' ✓ (has signed the CLA)');
         commit_authors[i]['signed'] = true;
-      }
-      else {
+      } else {
         console.log('- ' + username + ' ✕ (has not signed the CLA)');
-        commit_authors[i]['signed'] = false;
       }
-    }).catch((error) => {
-      console.log('- ' + username + ' ✕ (issue checking CLA status [' + error + '])');
-      commit_authors[i]['signed'] = false
-    });
+    } catch (error) {
+      console.error('Error occurred while checking user:', error.message);
+    }
   }
 
   console.log();
