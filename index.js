@@ -80,6 +80,7 @@ async function run() {
   }
 
   // Check GitHub
+  const signedCLAJson = process.env.SIGNED_CLA_JSON;
   console.log('Checking the following users on GitHub:');
   for (const i in commit_authors) {
     const username = commit_authors[i]['username'];
@@ -114,22 +115,22 @@ async function run() {
       continue
     }
 
-    await ghCLA.request('GET /orgs/{org}/members/{username}', {
-      org: 'CanonicalContributorAgreement',
-      username: username
-    }).then((result) => {
-      if (result.status == 204) {
-        console.log('- ' + username + ' ✓ (has signed the CLA)');
-        commit_authors[i]['signed'] = true;
+    if (signedCLAJson) {
+      try {
+        const signedCLA = JSON.parse(signedCLAJson);
+
+        if (signedCLA.signed_cla.includes(username)) {
+          commit_authors[i]['signed'] = true;
+        } else {
+          console.log(username + " is not in the list.");
+        }
+      } catch (error) {
+        console.error("Error parsing JSON:", error);
       }
-      else {
-        console.log('- ' + username + ' ✕ (has not signed the CLA)');
-        commit_authors[i]['signed'] = false;
-      }
-    }).catch((error) => {
-      console.log('- ' + username + ' ✕ (issue checking CLA status [' + error + '])');
-      commit_authors[i]['signed'] = false
-    });
+    } else {
+      console.log("SIGNED_CLA_JSON environment variable is not set.");
+    }
+
   }
 
   console.log();
