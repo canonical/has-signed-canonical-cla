@@ -8,3 +8,5 @@ jobs:
       - uses: actions/checkout@v2
       - name: Check if CLA signed
         uses: ./
+        env:
+          SIGNED_CLA_JSON: ${{ secrets.SIGNED_CLA_JSON }}
