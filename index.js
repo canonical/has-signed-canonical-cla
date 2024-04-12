@@ -132,9 +132,9 @@ async function run() {
   console.log();
 
   // Check Launchpad
-  console.log('Checking the following users on Launchpad:');
   for (const i in commit_authors) {
     if (commit_authors[i]['signed'] == false) {
+      console.log('Checking the following user on Launchpad:');
       const email = commit_authors[i]['email'];
 
       await exec.exec('python3', [path.join(__dirname, 'lp_cla_check.py'), email], options = {
