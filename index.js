@@ -29,7 +29,6 @@ async function run() {
   core.startGroup('Installing python3-launchpadlib')
   await exec.exec('sudo apt-get update');
   await exec.exec('sudo apt-get install python3-launchpadlib');
-  await exec.exec('npm install axios');
   core.endGroup()
 
   console.log();
