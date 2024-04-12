@@ -37,7 +37,6 @@ async function run() {
 
   // Get existing contributors
   const ghRepo = github.getOctokit(githubToken);
-  const ghCLA = github.getOctokit(token_header + token_footer);
 
   const accept_existing_contributors = (core.getInput('accept-existing-contributors') == "true");
 
