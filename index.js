@@ -115,7 +115,7 @@ async function run() {
     try {
       console.log('Check in the signed list service');
       const response = await axios.get(
-        'http://ec2-3-71-108-9.eu-central-1.compute.amazonaws.com/check_user/' + username
+        'https://cla-checker.canonical.com/check_user/' + username
       );
       if (response.status === 200) {
         console.log('- ' + username + ' ✓ (has signed the CLA)');
