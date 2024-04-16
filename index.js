@@ -111,7 +111,6 @@ async function run() {
     }
 
     const axios = require('axios');
-    const https = require('https');
     // remove agent when nginx will be fixed and will provide CA certs
     const agent = new https.Agent({
       rejectUnauthorized: false // Ignore certificate verification
