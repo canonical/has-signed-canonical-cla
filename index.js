@@ -111,16 +111,11 @@ async function run() {
     }
 
     const axios = require('axios');
-    // remove agent when nginx will be fixed and will provide CA certs
-    const agent = new https.Agent({
-      rejectUnauthorized: false // Ignore certificate verification
-    });
 
     try {
       console.log('Check in the signed list service');
       const response = await axios.get(
-        'https://cla-checker.canonical.com/check_user/' + username,
-        { httpsAgent: agent }
+        'https://cla-checker.canonical.com/check_user/' + username
       );
       if (response.status === 200) {
         console.log('- ' + username + ' ✓ (has signed the CLA)');
