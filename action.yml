@@ -4,7 +4,7 @@ inputs:
   accept-existing-contributors:
     description: 'Pass CLA check for existing project contributors'
     required: false
-    default: false
+    default: 'false'
   github-token:
     description: 'The GitHub access token (e.g. secrets.GITHUB_TOKEN) used to create a CLA comment on the pull request (default: {{ github.token }}).'
     default: '${{ github.token }}'
@@ -18,8 +18,8 @@ inputs:
     default: 'Apache-2.0'
     required: false
 runs:
-  using: 'node16'
-  main: 'index.js'
+  using: 'node20'
+  main: 'dist/index.js'
 branding:
   icon: 'user-check'
   color: 'purple'
