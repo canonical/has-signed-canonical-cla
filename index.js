@@ -121,11 +121,11 @@ async function run() {
         commit_authors[i]['signed'] = true;
       }
     } catch (error) {
-    if (error.response && error.response.status === 404) {
-      console.log('- ' + username + ' ✕ (has not signed the CLA)');
-    } else {
-      console.error('Error occurred while checking user:', error.message);
-    }
+      if (error.response && error.response.status === 404) {
+        console.log('- ' + username + ' ✕ (has not signed the CLA)');
+      } else {
+        console.error('Error occurred while checking user:', error.message);
+      }
   }
 
   console.log();
