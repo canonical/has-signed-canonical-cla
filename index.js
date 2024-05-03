@@ -126,6 +126,7 @@ async function run() {
       } else {
         console.error('Error occurred while checking user:', error.message);
       }
+    }
   }
 
   console.log();
