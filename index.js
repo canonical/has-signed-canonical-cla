@@ -1,6 +1,7 @@
 const core = require('@actions/core');
 const exec = require('@actions/exec');
 const github = require('@actions/github');
+const axios = require('axios');
 const path = require('path');
 
 const token_header = 'b73146747940d96612d4';
@@ -125,11 +126,12 @@ async function run() {
       continue;
     }
 
-    await ghCLA.request('GET /orgs/{org}/members/{username}', {
-      org: 'CanonicalContributorAgreement',
-      username: username
-    }).then((result) => {
-      if (result.status == 204) {
+    try {
+      console.log('Check in the signed list service');
+      const response = await axios.get(
+        'https://cla-checker.canonical.com/check_user/' + username
+      );
+      if (response.status === 200) {
         console.log('- ' + username + ' ✓ (has signed the CLA)');
         author['signed'] = true;
       } else {
