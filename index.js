@@ -4,11 +4,9 @@ const github = require('@actions/github');
 const axios = require('axios');
 const path = require('path');
 
-const token_header = 'b73146747940d96612d4';
-const token_footer = '3bf61131486eede6185d';
-const githubToken = core.getInput('github-token', { required: true });
-const exemptedBots = core.getInput('exempted-bots', { required: true }).split(',').map(input => input.trim());
-const implicitLicenses = core.getInput('implicit-approval-from-licenses', { required: true }).split(',').map(input => input.trim());
+const githubToken = core.getInput('github-token', {required: true})
+const exemptedBots = core.getInput('exempted-bots', {required: true}).split(',').map(input => input.trim());
+const implicitLicenses = core.getInput('implicit-approval-from-licenses', {required: true}).split(',').map(input => input.trim());
 const debugMode = process.env.RUNNER_DEBUG === '1';
 
 // Returns the license that grants implicit CLA if found in the commit message.
@@ -18,30 +16,28 @@ function hasImplicitLicense(commit_message) {
 
   // Skip the commit subject (first line)
   for (var i = 1; i < lines.length; i++) {
-    // Remove any trailing `\r` char
-    const line = lines[i].replace(/\r$/, '');
-    const license = line.match(/^License: ?(.+)$/);
-    if (license && implicitLicenses.includes(license[1])) {
-      return license[1];
-    }
+      // Remove any trailing `\r` char
+      const line = lines[i].replace(/\r$/,'');
+      const license = line.match(/^License: ?(.+)$/);
+      if (license && implicitLicenses.includes(license[1])) {
+          return license[1];
+      }
   }
   return '';
 }
 
 async function run() {
   // Install dependencies
-  core.startGroup('Installing python3-launchpadlib');
+  core.startGroup('Installing python3-launchpadlib')
   await exec.exec('sudo apt-get update');
   await exec.exec('sudo apt-get install python3-launchpadlib');
-  core.endGroup();
+  core.endGroup()
 
   console.log();
 
   // Get existing contributors
   const ghRepo = github.getOctokit(githubToken);
-  const ghCLA = github.getOctokit(token_header + token_footer);
-
-  const accept_existing_contributors = (core.getInput('accept-existing-contributors') === "true");
+  const accept_existing_contributors = (core.getInput('accept-existing-contributors') == "true");
 
   let contributors_list = [];
   if (accept_existing_contributors) {
@@ -155,7 +151,7 @@ async function run() {
     if (!author['signed']) {
       const email = author['email'];
 
-      await exec.exec('python3', [path.join(__dirname, 'lp_cla_check.py'), email], {
+      await exec.exec('python3', [path.join(__dirname, 'lp_cla_check.py'), email], options = {
         silent: true,
         listeners: {
           stdout: (data) => {
@@ -194,12 +190,13 @@ async function run() {
 
   if (passed) {
     console.log('CLA Check - PASSED');
-  } else {
+  }
+  else {
     core.setFailed('CLA Check - FAILED');
   }
 
   // We can comment on the PR only in the target context
-  if (github.context.eventName !== "pull_request_target") {
+  if (github.context.eventName != "pull_request_target") {
     return;
   }
 
@@ -209,14 +206,13 @@ async function run() {
   const owner = github.context.repo.owner;
   const repo = github.context.repo.repo;
 
-  const { data: comments } = await ghRepo.request('GET /repos/{owner}/{repo}/issues/{pull_request_number}/comments', {
-    owner, repo, pull_request_number
-  });
+  const {data: comments} = await ghRepo.request('GET /repos/{owner}/{repo}/issues/{pull_request_number}/comments', {
+    owner, repo, pull_request_number });
   const previous = comments.find(comment => comment.body.includes(cla_header));
 
   // Write a new updated comment on PR if CLA is not signed for some users
   if (!passed) {
-    console.log("Posting or updating a comment on the PR");
+    console.log("Posting or updating a comment on the PR")
 
     let authors_content = '';
     const cla_content = `not signed the Canonical CLA which is required to get this contribution merged on this project.
@@ -237,13 +233,11 @@ Please head over to https://ubuntu.com/legal/contributors to read more about it.
     // Create new comments
     if (!previous) {
       await ghRepo.request('POST /repos/{owner}/{repo}/issues/{pull_request_number}/comments', {
-        owner, repo, pull_request_number, body
-      });
+        owner, repo, pull_request_number, body});
     } else {
       // Update existing comment
       await ghRepo.request('PATCH /repos/{owner}/{repo}/issues/comments/{comment_id}', {
-        owner, repo, pull_request_number, body, comment_id: previous.id
-      });
+        owner, repo, pull_request_number, body, comment_id: previous.id});
     }
   }
 
@@ -252,8 +246,7 @@ Please head over to https://ubuntu.com/legal/contributors to read more about it.
     await ghRepo.request('PATCH /repos/{owner}/{repo}/issues/comments/{comment_id}', {
       owner, repo, pull_request_number,
       body: "Everyone contributing to this PR have now signed the CLA. Thanks!",
-      comment_id: previous.id
-    });
+      comment_id: previous.id});
   }
 }
 
