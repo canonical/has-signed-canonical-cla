@@ -1,8 +1,6 @@
 const core = require('@actions/core');
-const exec = require('@actions/exec');
 const github = require('@actions/github');
 const axios = require('axios');
-const path = require('path');
 
 const githubToken = core.getInput('github-token', {required: true})
 const exemptedBots = core.getInput('exempted-bots', {required: true}).split(',').map(input => input.trim());
@@ -26,14 +24,6 @@ function hasImplicitLicense(commit_message) {
 }
 
 async function run() {
-  // Install dependencies
-  core.startGroup('Installing python3-launchpadlib')
-  await exec.exec('sudo apt-get update');
-  await exec.exec('sudo apt-get install python3-launchpadlib');
-  core.endGroup()
-
-  console.log();
-
   // Get existing contributors
   const ghRepo = github.getOctokit(githubToken);
   const accept_existing_contributors = (core.getInput('accept-existing-contributors') == "true");
@@ -128,35 +118,6 @@ async function run() {
       }
     }
   }
-
-  console.log();
-
-  // Check Launchpad
-  for (const i in commit_authors) {
-    if (commit_authors[i]['signed'] == false) {
-      console.log('Checking the following user on Launchpad:');
-      const email = commit_authors[i]['email'];
-
-      await exec.exec('python3', [path.join(__dirname, 'lp_cla_check.py'), email], options = {
-        silent: true,
-        listeners: {
-          stdout: (data) => {
-            process.stdout.write(data.toString());
-          },
-          stderr: (data) => {
-            process.stdout.write(data.toString());
-          }
-        }
-      })
-        .then((result) => {
-          commit_authors[i]['signed'] = true;
-        }).catch((error) => {
-          commit_authors[i]['signed'] = false;
-        });
-    }
-  }
-
-  console.log();
 
   // Determine Result
   passed = true
