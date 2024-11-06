@@ -19,7 +19,6 @@
   "homepage": "https://github.com/canonical/has-signed-canonical-cla#readme",
   "dependencies": {
     "@actions/core": "^1.2.6",
-    "@actions/exec": "^1.0.4",
     "@actions/github": "^6.0.0",
     "axios": "^1.6.8"
   }
