@@ -17,7 +17,8 @@ function hasImplicitLicense(commit_message) {
   for (var i = 1; i < lines.length; i++) {
       // Remove any trailing `\r` char
       const line = lines[i].replace(/\r$/,'');
-      const license = line.match(/^License: ?(.+)$/);
+      // Accept both American and British spellings (`License` and `Licence`)
+      const license = line.match(/^Licen[cs]e: ?(.+)$/);
       if (license && implicitLicenses.includes(license[1])) {
           return license[1];
       }
