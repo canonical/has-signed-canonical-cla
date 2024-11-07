@@ -34,19 +34,7 @@ async function run() {
 
   console.log();
 
-  // Get existing contributors
   const ghRepo = github.getOctokit(githubToken);
-  const accept_existing_contributors = (core.getInput('accept-existing-contributors') == "true");
-
-  if (accept_existing_contributors) {
-    const contributors_url = github.context.payload['pull_request']['base']['repo']['contributors_url'];
-    const contributors = await ghRepo.request('GET ' + contributors_url);
-
-    var contributors_list = []
-    for (const i in contributors.data) {
-      contributors_list.push(contributors.data[i]['login']);
-    }
-  }
 
   // Get commit authors
   const commits_url = github.context.payload['pull_request']['commits_url'];
@@ -102,11 +90,6 @@ async function run() {
     }
     if (email.endsWith('@ocadogroup.com') || email.endsWith('@ocado.com')) {
       console.log('- ' + username + ' ✓ (@ocado{,group}.com account)');
-      commit_authors[i]['signed'] = true;
-      continue
-    }
-    if (accept_existing_contributors && contributors_list.includes(username)) {
-      console.log('- ' + username + ' ✓ (already a contributor)');
       commit_authors[i]['signed'] = true;
       continue
     }
