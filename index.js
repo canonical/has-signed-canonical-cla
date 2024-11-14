@@ -1,8 +1,6 @@
 const core = require('@actions/core');
-const exec = require('@actions/exec');
 const github = require('@actions/github');
 const axios = require('axios');
-const path = require('path');
 
 const githubToken = core.getInput('github-token', {required: true})
 const exemptedBots = core.getInput('exempted-bots', {required: true}).split(',').map(input => input.trim());
@@ -17,7 +15,8 @@ function hasImplicitLicense(commit_message) {
   for (var i = 1; i < lines.length; i++) {
       // Remove any trailing `\r` char
       const line = lines[i].replace(/\r$/,'');
-      const license = line.match(/^License: ?(.+)$/);
+      // Accept both American and British spellings (`License` and `Licence`)
+      const license = line.match(/^Licen[cs]e: ?(.+)$/);
       if (license && implicitLicenses.includes(license[1])) {
           return license[1];
       }
@@ -26,27 +25,7 @@ function hasImplicitLicense(commit_message) {
 }
 
 async function run() {
-  // Install dependencies
-  core.startGroup('Installing python3-launchpadlib')
-  await exec.exec('sudo apt-get update');
-  await exec.exec('sudo apt-get install python3-launchpadlib');
-  core.endGroup()
-
-  console.log();
-
-  // Get existing contributors
   const ghRepo = github.getOctokit(githubToken);
-  const accept_existing_contributors = (core.getInput('accept-existing-contributors') == "true");
-
-  if (accept_existing_contributors) {
-    const contributors_url = github.context.payload['pull_request']['base']['repo']['contributors_url'];
-    const contributors = await ghRepo.request('GET ' + contributors_url);
-
-    var contributors_list = []
-    for (const i in contributors.data) {
-      contributors_list.push(contributors.data[i]['login']);
-    }
-  }
 
   // Get commit authors
   const commits_url = github.context.payload['pull_request']['commits_url'];
@@ -95,11 +74,6 @@ async function run() {
       commit_authors[i]['signed'] = true;
       continue
     }
-    if (accept_existing_contributors && contributors_list.includes(username)) {
-      console.log('- ' + username + ' ✓ (already a contributor)');
-      commit_authors[i]['signed'] = true;
-      continue
-    }
 
     try {
       console.log('Check in the signed list service');
@@ -118,35 +92,6 @@ async function run() {
       }
     }
   }
-
-  console.log();
-
-  // Check Launchpad
-  for (const i in commit_authors) {
-    if (commit_authors[i]['signed'] == false) {
-      console.log('Checking the following user on Launchpad:');
-      const email = commit_authors[i]['email'];
-
-      await exec.exec('python3', [path.join(__dirname, 'lp_cla_check.py'), email], options = {
-        silent: true,
-        listeners: {
-          stdout: (data) => {
-            process.stdout.write(data.toString());
-          },
-          stderr: (data) => {
-            process.stdout.write(data.toString());
-          }
-        }
-      })
-        .then((result) => {
-          commit_authors[i]['signed'] = true;
-        }).catch((error) => {
-          commit_authors[i]['signed'] = false;
-        });
-    }
-  }
-
-  console.log();
 
   // Determine Result
   passed = true
