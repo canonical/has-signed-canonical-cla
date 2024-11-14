@@ -6,10 +6,6 @@ When run on the `pull_request_target` event, this action will also comment on th
 
 ## Inputs
 
-### `accept-existing-contributors`
-
-**Optional** Pass CLA check for existing project contributors (default: false)
-
 ### `github-token`
 
 **Optional** The GitHub access token (e.g. secrets.GITHUB_TOKEN) used to create a CLA comment on the pull request (default: {{ github.token }})
