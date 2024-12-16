@@ -3,7 +3,6 @@ const github = require('@actions/github');
 const axios = require('axios');
 
 const githubToken = core.getInput('github-token', {required: true})
-const exemptedBots = core.getInput('exempted-bots', {required: true}).split(',').map(input => input.trim());
 const implicitLicenses = core.getInput('implicit-approval-from-licenses', {required: true}).split(',').map(input => input.trim());
 
 // Returns the license that grants implicit CLA if found in the commit message.
@@ -64,7 +63,7 @@ async function run() {
     if (!username) {
       continue;
     }
-    if (username.endsWith('[bot]') && exemptedBots.includes(username.slice(0, -5))) {
+    if (username.endsWith('[bot]')) {
       console.log('- ' + username + ' ✓ (Bot exempted from CLA)');
       commit_authors[i]['signed'] = true;
       continue
