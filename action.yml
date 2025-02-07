@@ -5,10 +5,6 @@ inputs:
     description: 'The GitHub access token (e.g. secrets.GITHUB_TOKEN) used to create a CLA comment on the pull request (default: {{ github.token }}).'
     default: '${{ github.token }}'
     required: false
-  implicit-approval-from-licenses:
-    description: 'Licences for which an implicit approval of the CLA is assumed.'
-    default: 'Apache-2.0'
-    required: false
 runs:
   using: 'node20'
   main: 'index.js'

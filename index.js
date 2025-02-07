@@ -3,11 +3,26 @@ const github = require('@actions/github');
 const axios = require('axios');
 
 const githubToken = core.getInput('github-token', {required: true})
-const implicitLicenses = core.getInput('implicit-approval-from-licenses', {required: true}).split(',').map(input => input.trim());
 
-// Returns the license that grants implicit CLA if found in the commit message.
-// Otherwise, returns an empty string.
-function hasImplicitLicense(commit_message) {
+// the map provides the list of repos that have implicit approvals from
+// the license header in commit message and related license map
+const licenseMap = {
+    'canonical/lxd': [
+        'Apache-2.0'
+    ],
+    'canonical/lxd-ci': [
+        'Apache-2.0'
+    ],
+    'canonical/lxd-imagebuilder': [
+        'Apache-2.0'
+    ],
+}
+
+
+/**
+ * Returns the license from `licenseMap` that grants implicit CLA if found in the commit message.
+ */
+function hasImplicitLicense(commit_message, repoName) {
   const lines = commit_message.split('\n');
 
   // Skip the commit subject (first line)
@@ -16,7 +31,7 @@ function hasImplicitLicense(commit_message) {
       const line = lines[i].replace(/\r$/,'');
       // Accept both American and British spellings (`License` and `Licence`)
       const license = line.match(/^Licen[cs]e: ?(.+)$/);
-      if (license && implicitLicenses.includes(license[1])) {
+      if (license && licenseMap[repoName].includes(license[1])) {
           return license[1];
       }
   }
@@ -26,19 +41,22 @@ function hasImplicitLicense(commit_message) {
 async function run() {
   const ghRepo = github.getOctokit(githubToken);
 
-  // Get commit authors
-  const commits_url = github.context.payload['pull_request']['commits_url'];
+  const commits_url = github.context.payload.pull_request.commits_url;
   const commits = await ghRepo.request('GET ' + commits_url);
 
+  const repoFullName = github.context.payload.repository.full_name;
+  const repoInLicenseMap = repoFullName in licenseMap;
   var commit_authors = []
   for (const i in commits.data) {
     // Check if the commit message contains a license header that matches
     // one of the licenses granting implicit CLA approval
     if (commits.data[i]['commit']['message']) {
-      const goodLicense = hasImplicitLicense(commits.data[i]['commit']['message']);
-      if (goodLicense) {
-        console.log('- commit ' + commits.data[i]['sha'] + ' ✓ (' + goodLicense + ' license)');
-        continue;
+      if (repoInLicenseMap) {
+        const goodLicense = hasImplicitLicense(commits.data[i]['commit']['message'], repoFullName);
+        if (goodLicense) {
+          console.log('- commit ' + commits.data[i]['sha'] + ' ✓ (' + goodLicense + ' license)');
+          continue;
+        }
       }
     }
 
