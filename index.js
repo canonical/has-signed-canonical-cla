@@ -125,66 +125,12 @@ async function run() {
     console.log('CLA Check - PASSED');
   }
   else {
+    console.log(
+      `Some commit authors have not signed the Canonical CLA which is
+      required to get this contribution merged on this project.
+      Please head over to https://ubuntu.com/legal/contributors to read more about it.`
+    );
     core.setFailed('CLA Check - FAILED');
-  }
-
-  // We can comment on the PR only in the target context
-  if (github.context.eventName != "pull_request_target") {
-    return;
-  }
-
-  // Find previous CLA comment if any
-  const cla_header = '<!-- CLA signature is needed -->';
-  const pull_request_number = github.context.payload.pull_request.number;
-  const owner = github.context.repo.owner;
-  const repo = github.context.repo.repo;
-
-  const {data: comments} = await ghRepo.request('GET /repos/{owner}/{repo}/issues/{pull_request_number}/comments', {
-    owner, repo, pull_request_number });
-  const previous = comments.find(comment => comment.body.includes(cla_header));
-
-  // Write a new updated comment on PR if CLA is not signed for some users
-  if (!passed) {
-    console.log("Posting or updating a comment on the PR")
-
-    var authors_content;
-    var cla_content=`not signed the Canonical CLA which is required to get this contribution merged on this project.
-Please head over to https://ubuntu.com/legal/contributors to read more about it.`
-    non_signers.forEach(function (author, i) {
-      if (i == 0) {
-        authors_content=author;
-        return;
-      } else if (i == non_signers.length-1) {
-        authors_content=' and ' + author;
-        return;
-      }
-      authors_content=', ' + author;
-    });
-
-    if (non_signers.length > 1) {
-      authors_content+=' have ';
-    } else {
-      authors_content+=' has ';
-    }
-
-    var body = `${cla_header}Hey! ${authors_content} ${cla_content}`
-    // Create new comments
-    if (!previous) {
-      await ghRepo.request('POST /repos/{owner}/{repo}/issues/{pull_request_number}/comments', {
-        owner, repo, pull_request_number, body});
-    } else {
-      // Update existing comment
-      await ghRepo.request('PATCH /repos/{owner}/{repo}/issues/comments/{comment_id}', {
-        owner, repo, pull_request_number, body, comment_id: previous.id});
-    }
-  }
-
-  // Update previous comment if everyone has now signed the CLA
-  if (previous && passed) {
-    await ghRepo.request('PATCH /repos/{owner}/{repo}/issues/comments/{comment_id}', {
-      owner, repo, pull_request_number,
-      body: "Everyone contributing to this PR have now signed the CLA. Thanks!",
-      comment_id: previous.id});
   }
 }
 

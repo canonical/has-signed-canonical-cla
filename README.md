@@ -2,8 +2,6 @@
 
 This GitHub Action verifies whether or not the authors of a pull request have signed the Canonical Contributor Licence Agreement (https://ubuntu.com/legal/contributors).
 
-When run on the `pull_request_target` event, this action will also comment on the PR if any authors have not signed the CLA, and update those messages when new commits or runs are processed.
-
 ## Inputs
 
 ### `github-token`
@@ -18,7 +16,7 @@ When run on the `pull_request_target` event, this action will also comment on th
 
 ```
 name: cla-check
-on: [pull_request_target]
+on: [pull_request]
 
 jobs:
   cla-check:
