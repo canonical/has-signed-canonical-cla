@@ -1,8 +1,7 @@
 const core = require('@actions/core');
 const github = require('@actions/github');
 const axios = require('axios');
-
-const githubToken = core.getInput('github-token', {required: true})
+const githubToken = process.env.GITHUB_TOKEN;
 
 // the map provides the list of repos that have implicit approvals from
 // the license header in commit message and related license map
@@ -112,11 +111,9 @@ async function run() {
 
   // Determine Result
   passed = true
-  var non_signers = []
   for (const i in commit_authors) {
     if (commit_authors[i]['signed'] == false) {
       passed = false;
-      non_signers.push(i)
       break;
     }
   }
@@ -126,9 +123,9 @@ async function run() {
   }
   else {
     console.log(
-      `Some commit authors have not signed the Canonical CLA which is
-      required to get this contribution merged on this project.
-      Please head over to https://ubuntu.com/legal/contributors to read more about it.`
+      'Some commit authors have not signed the Canonical CLA which is ' +
+      'required to get this contribution merged on this project.\n' +
+      'Please head over to https://ubuntu.com/legal/contributors to read more about it.'
     );
     core.setFailed('CLA Check - FAILED');
   }
