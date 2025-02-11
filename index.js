@@ -1,7 +1,7 @@
 const core = require('@actions/core');
 const github = require('@actions/github');
 const axios = require('axios');
-const githubToken = process.env.GITHUB_TOKEN;
+const githubToken = core.getInput('github-token', {required: true})
 
 // the map provides the list of repos that have implicit approvals from
 // the license header in commit message and related license map
