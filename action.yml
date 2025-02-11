@@ -2,9 +2,9 @@ name: 'Has Signed Canonical CLA'
 description: 'This GitHub Action verifies whether or not the authors of a pull request have signed the Canonical CLA.'
 inputs:
   github-token:
-    description: 'The GitHub access token (e.g. secrets.GITHUB_TOKEN) used to create a CLA comment on the pull request (default: {{ github.token }}).'
-    default: '${{ github.token }}'
+    description: 'The GitHub access token.'
     required: false
+    default: ${{ github.token }}
 runs:
   using: 'node20'
   main: 'index.js'
