@@ -45,64 +45,64 @@ async function run() {
 
   const repoFullName = github.context.payload.repository.full_name;
   const repoInLicenseMap = repoFullName in licenseMap;
-  var commit_authors = []
-  for (const i in commits.data) {
+  var commit_authors = {};
+  for (const commitObj of commits.data) {
     // Check if the commit message contains a license header that matches
     // one of the licenses granting implicit CLA approval
-    if (commits.data[i]['commit']['message']) {
+    if (commitObj.commit.message) {
       if (repoInLicenseMap) {
-        const goodLicense = hasImplicitLicense(commits.data[i]['commit']['message'], repoFullName);
+        const goodLicense = hasImplicitLicense(commitObj.commit.message, repoFullName);
         if (goodLicense) {
-          console.log('- commit ' + commits.data[i]['sha'] + ' ✓ (' + goodLicense + ' license)');
+          console.log(`- commit ${commitObj.sha} ✓ (${goodLicense} license)`);
           continue;
         }
       }
     }
 
-    var username;
-    if (commits.data[i]['author']) {
-      username = commits.data[i]['author']['login'];
+    const email = commitObj.commit.author.email;
+    if (!email) {
+      core.setFailed(`Commit ${commitObj.sha} has no author email.`);
+      return;
     }
-    const email = commits.data[i]['commit']['author']['email'];
-    commit_authors[username] = {
-      'username': username,
-      'email': email,
-      'signed': false
+    const username = commitObj.author ? commitObj.author.login : null;
+    commit_authors[email] = {
+      username: username,
+      signed: false
     };
   }
 
   // Check GitHub
   console.log('Checking the following users on GitHub:');
-  for (const i in commit_authors) {
-    const username = commit_authors[i]['username'];
-    const email = commit_authors[i]['email'];
+  for (const email in commit_authors) {
+    const author = commit_authors[email];
+    const username = author.username;
 
     if (!username) {
       continue;
     }
     if (username.endsWith('[bot]')) {
-      console.log('- ' + username + ' ✓ (Bot exempted from CLA)');
-      commit_authors[i]['signed'] = true;
-      continue
+      console.log(`- ${username} ✓ (Bot exempted from CLA)`);
+      author.signed = true;
+      continue;
     }
     if (email.endsWith('@canonical.com')) {
-      console.log('- ' + username + ' ✓ (@canonical.com account)');
-      commit_authors[i]['signed'] = true;
-      continue
+      console.log(`- ${username} ✓ (@canonical.com account)`);
+      author.signed = true;
+      continue;
     }
 
     try {
       console.log('Check in the signed list service');
       const response = await axios.get(
-        'https://cla-checker.canonical.com/check_user/' + username
+        `https://cla-checker.canonical.com/check_user/${username}`
       );
       if (response.status === 200) {
-        console.log('- ' + username + ' ✓ (has signed the CLA)');
-        commit_authors[i]['signed'] = true;
+        console.log(`- ${username} ✓ (has signed the CLA)`);
+        author.signed = true;
       }
     } catch (error) {
       if (error.response && error.response.status === 404) {
-        console.log('- ' + username + ' ✕ (has not signed the CLA)');
+        console.log(`- ${username} ✕ (has not signed the CLA)`);
       } else {
         console.error('Error occurred while checking user:', error.message);
       }
@@ -110,9 +110,9 @@ async function run() {
   }
 
   // Determine Result
-  passed = true
-  for (const i in commit_authors) {
-    if (commit_authors[i]['signed'] == false) {
+  passed = true;
+  for (const email in commit_authors) {
+    if (!commit_authors[email].signed) {
       passed = false;
       break;
     }
