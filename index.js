@@ -92,12 +92,13 @@ async function run() {
     requireValidation.push(email);
   }
 
+  let response;
   try {
     console.log('Check in the CLA service');
     const emails = requireValidation.join(',');
     const githubUsernames = requireValidation.map(email => commit_authors[email].username).join(',');
 
-    const response = await axios.get(
+    response = await axios.get(
       `https://cla.canonical.com/cla/check?emails=${encodeURIComponent(emails)}&github_usernames=${encodeURIComponent(githubUsernames)}`
     );
 
