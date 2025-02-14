@@ -71,8 +71,7 @@ async function run() {
     };
   }
 
-  // Check GitHub
-  console.log('Checking the following users on GitHub:');
+  var requireValidation = [];
   for (const email in commit_authors) {
     const author = commit_authors[email];
     const username = author.username;
@@ -90,31 +89,37 @@ async function run() {
       author.signed = true;
       continue;
     }
-
-    try {
-      console.log('Check in the signed list service');
-      const response = await axios.get(
-        `https://cla-checker.canonical.com/check_user/${username}`
-      );
-      if (response.status === 200) {
-        console.log(`- ${username} ✓ (has signed the CLA)`);
-        author.signed = true;
-      }
-    } catch (error) {
-      if (error.response && error.response.status === 404) {
-        console.log(`- ${username} ✕ (has not signed the CLA)`);
-      } else {
-        console.error('Error occurred while checking user:', error.message);
-      }
-    }
+    requireValidation.push(email);
   }
 
-  // Determine Result
+  let response;
+  try {
+    console.log('Check in the CLA service');
+    const emails = requireValidation.join(',');
+    const githubUsernames = requireValidation.map(email => commit_authors[email].username).join(',');
+
+    response = await axios.get(
+      `https://cla.canonical.com/cla/check?emails=${encodeURIComponent(emails)}&github_usernames=${encodeURIComponent(githubUsernames)}`
+    );
+
+  } catch (error) {
+    console.error('Error occurred while checking CLA service:', error.message);
+    core.setFailed('CLA Check - FAILED');
+    return;
+  }
+
+  const claStatus = response.data;
   passed = true;
-  for (const email in commit_authors) {
-    if (!commit_authors[email].signed) {
+  for (const email of requireValidation) {
+    const author = commit_authors[email];
+    const username = author.username;
+
+    if (claStatus.emails[email] || claStatus.github_usernames[username]) {
+      console.log(`- ${username} ✓ (CLA signed)`);
+      author.signed = true;
+    } else {
+      console.log(`- ${username} (${email}) ✗ (CLA not signed)`);
       passed = false;
-      break;
     }
   }
 
