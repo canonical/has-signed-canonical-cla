@@ -152,6 +152,21 @@ async function checkCLAService(commitAuthors) {
   }
 }
 
+/**
+ * Runs the main process to check if all commit authors have signed the CLA.
+ * 
+ * This function performs the following steps:
+ * 1. Retrieves the list of commits from the pull request.
+ * 2. Checks if each commit message contains a license header that grants implicit CLA approval.
+ * 3. Collects the email addresses and usernames of commit authors.
+ * 4. Processes CLA exceptions for commit authors e.g. bots and Canonical employees.
+ * 5. Checks the CLA status of commit authors using CLA web service.
+ * 6. Reports the CLA status for each commit author.
+ * 
+ * @async
+ * @function run
+ * @returns {Promise<void>} Resolves when the process is complete.
+ */
 async function run() {
   const ghRepo = github.getOctokit(githubToken);
 
