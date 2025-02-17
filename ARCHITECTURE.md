@@ -32,9 +32,10 @@ sequenceDiagram
     
     alt All authors signed CLA
         Core->>Core: Log success message
+        Core->>User: (Exit 0) CI is Green
     else Some authors have not signed CLA
         Core->>Core: Log failure message
-        Core->>User: Notify that action failed
+        Core->>User: (Exit 1) CI is Red
     end
 
 ```
