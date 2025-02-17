@@ -171,33 +171,43 @@ async function run() {
   const ghRepo = github.getOctokit(githubToken);
 
   const commits_url = github.context.payload.pull_request.commits_url;
-  const commits = await ghRepo.request('GET ' + commits_url);
 
   const repoFullName = github.context.payload.repository.full_name;
   const repoInLicenseMap = repoFullName in licenseMap;
   var commitAuthors = {};
-  for (const commitObj of commits.data) {
-    // Check if the commit message contains a license header that matches
-    // one of the licenses granting implicit CLA approval
-    if (commitObj.commit.message && repoInLicenseMap) {
-        const goodLicense = hasImplicitLicense(commitObj.commit.message, repoFullName);
-        if (goodLicense) {
-          console.log(`- commit ${commitObj.sha} ✓ (${goodLicense} license)`);
-          continue;
-      }
-    }
+  var nCommits = 0;
 
-    const email = commitObj.commit.author.email;
-    if (!email) {
-      core.setFailed(`Commit ${commitObj.sha} has no author email.`);
-      return;
+  await ghRepo.paginate('GET' + commits_url,
+    {per_page: 100},
+    (response) => {
+      nCommits += response.data.length;
+      for (const commitObj of response.data) {
+        // Check if the commit message contains a license header that matches
+        // one of the licenses granting implicit CLA approval
+        if (commitObj.commit.message && repoInLicenseMap) {
+          const goodLicense = hasImplicitLicense(commitObj.commit.message, repoFullName);
+          if (goodLicense) {
+            console.log(`- commit ${commitObj.sha} ✓ (${goodLicense} license)`);
+            continue;
+          }
+        }
+
+        const email = commitObj.commit.author.email;
+        if (!email) {
+          core.setFailed(`Commit ${commitObj.sha} has no author email.`);
+          return;
+        }
+        const username = commitObj.author ? commitObj.author.login : null;
+        commitAuthors[email] = {
+          username: username,
+          signed: false
+        };
+      }
+
     }
-    const username = commitObj.author ? commitObj.author.login : null;
-    commitAuthors[email] = {
-      username: username,
-      signed: false
-    };
-  }
+  );
+
+  console.log(`Discovered ${nCommits} commits.`);
 
   processCLAExceptions(commitAuthors);
   const claStatus = await checkCLAService(commitAuthors);
