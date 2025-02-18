@@ -177,7 +177,7 @@ async function run() {
   var commitAuthors = {};
   var nCommits = 0;
 
-  await ghRepo.paginate('GET' + commits_url,
+  await ghRepo.paginate('GET ' + commits_url,
     {per_page: 100},
     (response) => {
       nCommits += response.data.length;
