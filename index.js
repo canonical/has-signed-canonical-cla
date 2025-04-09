@@ -2,6 +2,7 @@ const core = require('@actions/core');
 const github = require('@actions/github');
 const axios = require('axios');
 const githubToken = core.getInput('github-token', {required: true})
+const knownBotAccounts = ['weblate'];
 
 /**
  * A mapping of repositories to their respective licenses.
@@ -65,7 +66,7 @@ function processCLAExceptions(commitAuthors) {
     if (!username) {
       continue;
     }
-    if (username.endsWith('[bot]')) {
+    if (username.endsWith('[bot]') || knownBotAccounts.includes(username)) {
       console.log(`- ${username} ✓ (Bot exempted from CLA)`);
       author.signed = true;
       continue;
