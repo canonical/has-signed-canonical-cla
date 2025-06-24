@@ -1,4 +1,3 @@
-# The name of the file should not be changed as it is used in Org Ruleset
 name: cla-check
 on: [pull_request]
 
