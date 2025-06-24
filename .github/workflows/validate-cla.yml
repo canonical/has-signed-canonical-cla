@@ -1,9 +1,10 @@
+# The name of the file should not be changed as it is used in Org Ruleset
 name: cla-check
 on: [pull_request]
 
 jobs:
   cla-check:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - name: Check if CLA signed
