@@ -170,42 +170,87 @@ async function checkCLAService(commitAuthors) {
 async function run() {
   const ghRepo = github.getOctokit(githubToken);
 
-  const commits_url = github.context.payload.pull_request.commits_url;
+  const {owner, repo} = github.context.repo;
+  const payload = github.context.payload;
 
-  const repoFullName = github.context.payload.repository.full_name;
+  // Determine PRs to examine. Support:
+  //  - pull_request event (payload.pull_request)
+  //  - merge_group (payload.merge_group.head_sha) -> map commit -> PRs
+  //  - check_suite (payload.check_suite.pull_requests)
+  let prs = [];
+
+  if (payload && payload.pull_request) {
+    prs = [payload.pull_request];
+  } else if (payload && payload.merge_group && payload.merge_group.head_sha) {
+    const headSha = payload.merge_group.head_sha;
+    console.log(
+        `merge_group event detected, attempting to discover PRs for commit ${
+            headSha}`);
+    const resp = await ghRepo.rest.repos.listPullRequestsAssociatedWithCommit(
+        {owner, repo, commit_sha: headSha});
+    prs = resp && resp.data ? resp.data : [];
+  } else if (
+      payload && payload.check_suite &&
+      Array.isArray(payload.check_suite.pull_requests) &&
+      payload.check_suite.pull_requests.length > 0) {
+    prs = payload.check_suite.pull_requests;
+  }
+
+  if (!prs || prs.length === 0) {
+    core.setFailed(
+        'No pull request information could be discovered in the event payload.');
+    return;
+  }
+
+  const repoFullName = payload && payload.repository ?
+      payload.repository.full_name :
+      `${owner}/${repo}`;
   const repoInLicenseMap = repoFullName in licenseMap;
   var commitAuthors = {};
   var nCommits = 0;
 
-  await ghRepo.paginate('GET ' + commits_url,
-    {per_page: 100},
-    (response) => {
-      nCommits += response.data.length;
-      for (const commitObj of response.data) {
-        // Check if the commit message contains a license header that matches
-        // one of the licenses granting implicit CLA approval
-        if (commitObj.commit.message && repoInLicenseMap) {
-          const goodLicense = hasImplicitLicense(commitObj.commit.message, repoFullName);
-          if (goodLicense) {
-            console.log(`- commit ${commitObj.sha} ✓ (${goodLicense} license)`);
-            continue;
-          }
-        }
+  // For every PR discovered, list its commits and collect authors.
+  for (const pr of prs) {
+    const prNumber = pr.number || (pr.pull_request && pr.pull_request.number);
+    if (!prNumber) {
+      console.log('Skipping an entry without a pull request number');
+      continue;
+    }
 
-        const email = commitObj.commit.author.email;
-        if (!email) {
-          core.setFailed(`Commit ${commitObj.sha} has no author email.`);
-          return;
+    console.log(`Collecting commits for PR #${prNumber}`);
+    const commits = await ghRepo.paginate(
+        ghRepo.rest.pulls.listCommits,
+        {owner, repo, pull_number: prNumber, per_page: 100});
+
+    nCommits += commits.length;
+
+    for (const commitObj of commits) {
+      // Check if the commit message contains a license header that matches
+      // one of the licenses granting implicit CLA approval
+      if (commitObj && commitObj.commit && commitObj.commit.message &&
+          repoInLicenseMap) {
+        const goodLicense =
+            hasImplicitLicense(commitObj.commit.message, repoFullName);
+        if (goodLicense) {
+          console.log(`- commit ${commitObj.sha} ✓ (${goodLicense} license)`);
+          continue;
         }
-        const username = commitObj.author ? commitObj.author.login : null;
-        commitAuthors[email] = {
-          username: username,
-          signed: false
-        };
       }
 
+      const email = commitObj && commitObj.commit && commitObj.commit.author &&
+          commitObj.commit.author.email;
+      if (!email) {
+        core.setFailed(`Commit ${commitObj.sha} has no author email.`);
+        return;
+      }
+
+      const username = (commitObj.author && commitObj.author.login) ?
+          commitObj.author.login :
+          null;
+      commitAuthors[email] =
+          commitAuthors[email] || {username: username, signed: false};
     }
-  );
+  }
 
   console.log(`Discovered ${nCommits} commits.`);
 
