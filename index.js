@@ -211,17 +211,19 @@ async function run() {
 
   // For every PR discovered, list its commits and collect authors.
   for (const pr of prs) {
-    const prNumber = pr.number || (pr.pull_request && pr.pull_request.number);
-    if (!prNumber) {
-      console.log('Skipping an entry without a pull request number');
-      continue;
-    }
+    const commitsPerPr = await Promise.all(prs.map(async pr => {
+      const prNumber = pr.number || (pr.pull_request && pr.pull_request.number);
+      if (!prNumber) {
+        console.log('Skipping an entry without a pull request number');
+        return [];
+      }
+      console.log(`Collecting commits for PR #${prNumber}`);
+      return await ghRepo.paginate(
+          ghRepo.rest.pulls.listCommits,
+          {owner, repo, pull_number: prNumber, per_page: 100});
+    }));
 
-    console.log(`Collecting commits for PR #${prNumber}`);
-    const commits = await ghRepo.paginate(
-        ghRepo.rest.pulls.listCommits,
-        {owner, repo, pull_number: prNumber, per_page: 100});
-
+    const commits = commitsPerPr.flat();
     nCommits += commits.length;
 
     for (const commitObj of commits) {
