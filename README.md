@@ -7,7 +7,10 @@ This GitHub Action verifies whether or not the authors of a pull request have si
 
 ```
 name: cla-check
-on: [pull_request]
+on:
+  pull_request:
+  merge_group:
+    types: [checks_requested]
 
 jobs:
   cla-check:
