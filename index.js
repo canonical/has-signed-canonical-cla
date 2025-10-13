@@ -1,7 +1,8 @@
 const core = require('@actions/core');
 const github = require('@actions/github');
 const axios = require('axios');
-const githubToken = core.getInput('github-token', {required: true})
+const fs = require('fs');
+const githubToken = core.getInput('github-token', {required: true});
 
 /**
  * A mapping of repositories to their respective licenses.
@@ -168,6 +169,24 @@ async function run() {
   const {owner, repo} = github.context.repo;
   const payload = github.context.payload;
 
+  const repoFullName = payload && payload.repository ?
+      payload.repository.full_name :
+      `${owner}/${repo}`;
+
+  const excludedReposPath = './excluded-repos.json';
+  if (fs.existsSync(excludedReposPath)) {
+    try {
+      const excludedRepos = JSON.parse(fs.readFileSync(excludedReposPath, 'utf8'));
+      if (excludedRepos.includes(repoFullName)) {
+        console.log(`Repository ${repoFullName} is excluded from CLA check.`);
+        return;
+      }
+    } catch (error) {
+      core.setFailed(`Failed to read or parse excluded-repos.json: ${error.message}`);
+      return;
+    }
+  }
+
   let commits = [];
 
   if (payload && payload.pull_request) {
@@ -223,9 +242,6 @@ async function run() {
     return;
   }
 
-  const repoFullName = payload && payload.repository ?
-      payload.repository.full_name :
-      `${owner}/${repo}`;
   const repoInLicenseMap = repoFullName in licenseMap;
   var commitAuthors = {};
 
