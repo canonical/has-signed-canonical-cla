@@ -8,6 +8,13 @@ sequenceDiagram
     participant CLAService as CLA Web Service
 
     User->>Core: Trigger action with implicit<br> GitHub token
+    Core->>Core: Read excluded-repos.json from<br> the action's repository
+    Core->>Core: Check if repo is in the excluded list
+    alt Repo is excluded
+        Core->>Core: Log success message
+        Core->>User: (Exit 0) CI is Green
+    end
+    
     Core->>GitHub: Retrieve commits from<br> the pull request
 
     loop Process each commit
