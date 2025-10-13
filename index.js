@@ -70,11 +70,6 @@ function processCLAExceptions(commitAuthors) {
       author.signed = true;
       continue;
     }
-    if (email.endsWith('@canonical.com')) {
-      console.log(`- ${username} ✓ (@canonical.com account)`);
-      author.signed = true;
-      continue;
-    }
   }
 }
 
