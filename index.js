@@ -2,6 +2,7 @@ const core = require('@actions/core');
 const github = require('@actions/github');
 const axios = require('axios');
 const fs = require('fs');
+const path = require('path');
 const githubToken = core.getInput('github-token', {required: true});
 
 /**
@@ -173,7 +174,7 @@ async function run() {
       payload.repository.full_name :
       `${owner}/${repo}`;
 
-  const excludedReposPath = './excluded-repos.json';
+  const excludedReposPath = path.join(__dirname, 'excluded-repos.json');
   if (fs.existsSync(excludedReposPath)) {
     try {
       const excludedRepos = JSON.parse(fs.readFileSync(excludedReposPath, 'utf8'));
