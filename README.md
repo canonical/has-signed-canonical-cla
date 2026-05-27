@@ -15,6 +15,9 @@ on:
 jobs:
   cla-check:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
     steps:
       - name: Check if CLA signed
         uses: canonical/has-signed-canonical-cla@v2
